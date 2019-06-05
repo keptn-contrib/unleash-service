@@ -11,6 +11,9 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"os"
+	"strconv"
+
+	"github.com/keptn/unleash-service/dtutils"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
@@ -35,14 +38,45 @@ func main() {
 
 // ProblemEvent ...
 type ProblemEvent struct {
-	State            string   `json:"state"`
-	ProblemID        string   `json:"problemID"`
-	PID              string   `json:"pid"`
-	ProblemTitle     string   `json:"problemTitle"`
-	ProblemDetails   string   `json:"problemDetails"`
-	ImpactedEntities []string `json:"impactedEntities"`
-	ImpactedEntity   string   `json:"impactedEntity"`
+	State            string           `json:"state"`
+	ProblemID        string           `json:"problemID"`
+	PID              string           `json:"pid"`
+	ProblemTitle     string           `json:"problemTitle"`
+	ProblemDetails   ProblemDetail    `json:"problemDetails"`
+	ImpactedEntities []ImpactedEntity `json:"impactedEntities"`
+	ImpactedEntity   string           `json:"impactedEntity"`
 }
+
+// ProblemDetail ...
+type ProblemDetail struct {
+	ID            string
+	StartTime     int
+	EndTime       int
+	DisplayName   string
+	ImpactLevel   string
+	Status        string
+	SeverityLevel string
+	CommentCount  int
+	//TagsOfAffectedEntitites
+	RankedEvents []dtutils.Event
+}
+
+// ImpactedEntity ...
+type ImpactedEntity struct {
+	Type   string
+	Name   string
+	Entity string
+}
+
+// CustomProperties ...
+type CustomProperties struct {
+	RemediationProvider *string
+	RemediationAction   *string
+	RemediationURL      *string
+	Approver            *string
+}
+
+const remediationUser = "keptn@keptn.sh"
 
 func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	var shkeptncontext string
@@ -62,11 +96,40 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		return errors.New(errorMsg)
 	}
 
-	// TODO
+	// check for ranked events
+	for _, rankedEvent := range data.ProblemDetails.RankedEvents {
+		if rankedEvent.IsRootCause {
+			keptnutils.Debug(shkeptncontext, "Root cause entity ID: "+rankedEvent.EntityID)
+			events := dtutils.GetEventsFromEntity(shkeptncontext, rankedEvent.EntityID, rankedEvent.StartTime)
+			var rootCauseFound = false
+			for _, event := range events.Events {
+				if event.EventType == "CUSTOM_CONFIGURATION" && event.IsRootCause {
+					rootCauseFound = true
+					keptnutils.Info(shkeptncontext, "Root cause of problem: "+strconv.Itoa(event.EventID))
+					fmt.Println("EntityName: " + event.EntityName)
+
+					fmt.Println("RemediationProvider: " + event.CustomProperties.RemediationProvider)
+				}
+
+			}
+			if !rootCauseFound {
+				keptnutils.Info(shkeptncontext, "No root cause with CUSTOM_CONFIGURATION found")
+				return nil // errors.New("No root cause with CUSTOM_CONFIGURATION found")
+			}
+		}
+	}
+
+	// // check for impacted entities
+	// for _, v := range data.ImpactedEntities {
+	// 	keptnutils.Info(shkeptncontext, "impacted:"+v.Name)
+	// }
+
+	//dtEvents := dtutils.GetEventsFromEntity(entityID)
+
 	keptnutils.Debug(shkeptncontext, "start")
 
 	requestBody, err := json.Marshal(map[string]string{
-		"email": "keptn@keptn.sh",
+		"email": remediationUser,
 	})
 	if err != nil {
 		keptnutils.Error(shkeptncontext, err.Error())
@@ -102,14 +165,6 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	body, _ = ioutil.ReadAll(resp.Body)
 
 	keptnutils.Info(shkeptncontext, string(body))
-
-	// repo, err := checkoutConfiguration(data.GitHubOrg, data.Project, data.Stage)
-	// if err != nil {
-	// 	keptnutils.Error(shkeptncontext, fmt.Sprintf("Error when checkingout configuration from GitHub: %s", err.Error()))
-	// 	return err
-	// }
-
-	keptnutils.Info(shkeptncontext, "Deploying with helm ugprade")
 
 	return nil //sendDeploymentFinishedEvent(shkeptncontext, event)
 }
