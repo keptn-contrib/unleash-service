@@ -61,7 +61,4 @@ func GetEventsFromEntity(shkeptncontext, entityID string, startTime int) Events 
 	//fmt.Println("data.TotalEventCount: " + strconv.Itoa(data.TotalEventCount))
 	return *data
 
-	//fmt.Println(data.CustomProperties.RemediationProvider)
-	//mt.Println("ok")
-	//return string(body)
 }
