@@ -13,13 +13,14 @@ import (
 	"os"
 	"strconv"
 
+	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/unleash-service/dtutils"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
+
 	"github.com/kelseyhightower/envconfig"
-	keptnutils "github.com/keptn/go-utils/pkg/utils"
 )
 
 type envConfig struct {
@@ -70,10 +71,10 @@ type ImpactedEntity struct {
 
 // CustomProperties ...
 type CustomProperties struct {
-	RemediationProvider *string
-	RemediationAction   *string
-	RemediationURL      *string
-	Approver            *string
+	RemediationProvider string
+	RemediationAction   string
+	RemediationURL      string
+	Approver            string
 }
 
 const remediationUser = "keptn@keptn.sh"
@@ -82,7 +83,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	var shkeptncontext string
 	event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 
-	keptnutils.Info(shkeptncontext, fmt.Sprintf("Got Event Context: %+v", event.Context))
+	keptnutils.Debug(shkeptncontext, fmt.Sprintf("Got Event Context: %+v", event.Context))
 
 	data := &ProblemEvent{}
 	if err := event.DataAs(data); err != nil {
@@ -224,6 +225,8 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 // }
 
 func _main(args []string, env envConfig) int {
+	keptnutils.ServiceName = "unleash-service"
+
 	ctx := context.Background()
 
 	t, err := cloudeventshttp.New(
