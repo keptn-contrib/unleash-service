@@ -128,8 +128,6 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		// TODO
 	}
 
-	fmt.Println("get remediation provider")
-
 	fmt.Println("RemediationPRovider: " + myEvent.CustomProperties.RemediationProvider)
 
 	// // check for impacted entities
