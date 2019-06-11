@@ -84,6 +84,8 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	}
 
 	// abort if no sh.keptn.events.problem event
+	fmt.Println(event)
+
 	if event.Type() != "sh.keptn.events.problem" {
 		const errorMsg = "Received unexpected keptn event"
 		keptnutils.Error(shkeptncontext, errorMsg)
