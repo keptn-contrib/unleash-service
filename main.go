@@ -90,23 +90,32 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		return err
 	}
 
+	// abort if no sh.keptn.events.problem event
 	if event.Type() != "sh.keptn.events.problem" {
 		const errorMsg = "Received unexpected keptn event"
 		keptnutils.Error(shkeptncontext, errorMsg)
 		return errors.New(errorMsg)
 	}
+	var myEvent = dtutils.Event{}
 
 	// check for ranked events
+	var generalRootCauseFound = false
 	for _, rankedEvent := range data.ProblemDetails.RankedEvents {
 		if rankedEvent.IsRootCause {
+			generalRootCauseFound = true
 			keptnutils.Debug(shkeptncontext, "Root cause entity ID: "+rankedEvent.EntityID)
 			events := dtutils.GetEventsFromEntity(shkeptncontext, rankedEvent.EntityID, rankedEvent.StartTime)
 			var rootCauseFound = false
+
 			for _, event := range events.Events {
 				if event.EventType == "CUSTOM_CONFIGURATION" && event.IsRootCause {
 					rootCauseFound = true
+					myEvent = event
 					keptnutils.Info(shkeptncontext, "Root cause of problem: "+strconv.Itoa(event.EventID))
 					fmt.Println("EntityName: " + event.EntityName)
+
+					fmt.Println("RemediationProvider: " + event.CustomProperties.RemediationProvider)
+				} else {
 
 					fmt.Println("RemediationProvider: " + event.CustomProperties.RemediationProvider)
 				}
@@ -114,10 +123,21 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 			}
 			if !rootCauseFound {
 				keptnutils.Info(shkeptncontext, "No root cause with CUSTOM_CONFIGURATION found")
-				return nil // errors.New("No root cause with CUSTOM_CONFIGURATION found")
+				//return nil // errors.New("No root cause with CUSTOM_CONFIGURATION found")
 			}
 		}
 	}
+	if !generalRootCauseFound {
+		keptnutils.Error(shkeptncontext, "ProblemDetails have no root cause attached.")
+	}
+
+	if myEvent.EventType == "CUSTOM_CONFIGURATON" {
+		// TODO
+	}
+
+	fmt.Println("get remediation provider")
+
+	fmt.Println("RemediationPRovider: " + myEvent.CustomProperties.RemediationProvider)
 
 	// // check for impacted entities
 	// for _, v := range data.ImpactedEntities {
@@ -125,8 +145,6 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	// }
 
 	//dtEvents := dtutils.GetEventsFromEntity(entityID)
-
-	keptnutils.Debug(shkeptncontext, "start")
 
 	requestBody, err := json.Marshal(map[string]string{
 		"email": remediationUser,
@@ -156,8 +174,9 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	keptnutils.Info(shkeptncontext, string(body))
 
-	// toggle feature flag
-	resp, err = client.Post(unleashServerURL+"/api/admin/features/ServeStaticReviews/toggle", "application/json", bytes.NewBuffer(requestBody))
+	// toggle feature flag to ON
+	keptnutils.Debug(shkeptncontext, "Toggling feature flag NAMENAMENAME to ON")
+	resp, err = client.Post(unleashServerURL+"/api/admin/features/ServeStaticReviews/toggle/on", "application/json", bytes.NewBuffer(requestBody))
 	if err != nil {
 		keptnutils.Error(shkeptncontext, fmt.Sprintf("Error when toggling feature in to Unleash server: %s", err.Error()))
 	}
