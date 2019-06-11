@@ -69,14 +69,6 @@ type ImpactedEntity struct {
 	Entity string
 }
 
-// CustomProperties ...
-type CustomProperties struct {
-	RemediationProvider string
-	RemediationAction   string
-	RemediationURL      string
-	Approver            string
-}
-
 const remediationUser = "keptn@keptn.sh"
 
 func gotEvent(ctx context.Context, event cloudevents.Event) error {
