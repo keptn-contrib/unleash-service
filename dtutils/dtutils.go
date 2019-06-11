@@ -38,8 +38,8 @@ type CustomProperties struct {
 	Approver            string
 }
 
-var dthost = "tno85405.live.dynatrace.com"
-var dtapitoken = "Zp3wxJERRKKK0uzPOol4l"
+var dthost = ""
+var dtapitoken = ""
 
 // GetEventsFromEntity ...
 func GetEventsFromEntity(shkeptncontext, entityID string, startTime int) Events {
