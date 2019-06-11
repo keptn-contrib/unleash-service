@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // Events ...
@@ -38,11 +39,13 @@ type CustomProperties struct {
 	Approver            string
 }
 
-var dthost = ""
-var dtapitoken = ""
-
 // GetEventsFromEntity ...
 func GetEventsFromEntity(shkeptncontext, entityID string, startTime int) Events {
+	dthost, dtapitoken, err := getDynatraceCredentials()
+	if err != nil {
+		keptnutils.Error(shkeptncontext, err.Error())
+	}
+	fmt.Println("https://" + dthost + "/api/v1/events?from=" + strconv.Itoa(startTime) + "&entityId=" + entityID + "&Api-Token=" + dtapitoken)
 	resp, err := http.Get("https://" + dthost + "/api/v1/events?from=" + strconv.Itoa(startTime) + "&entityId=" + entityID + "&Api-Token=" + dtapitoken)
 	if err != nil {
 		keptnutils.Error(shkeptncontext, err.Error())
@@ -61,4 +64,20 @@ func GetEventsFromEntity(shkeptncontext, entityID string, startTime int) Events 
 	//fmt.Println("data.TotalEventCount: " + strconv.Itoa(data.TotalEventCount))
 	return *data
 
+}
+
+func getDynatraceCredentials() (string, string, error) {
+
+	api, err := keptnutils.GetKubeAPI(false)
+	if err != nil {
+		return "", "", err
+	}
+
+	getOptions := metav1.GetOptions{}
+	secret, err := api.Secrets("keptn").Get("dynatrace", getOptions)
+	if err != nil {
+		return "", "", err
+	}
+
+	return string(secret.Data["DT_TENANT"]), string(secret.Data["DT_API_TOKEN"]), nil
 }
