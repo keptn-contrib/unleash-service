@@ -3,6 +3,9 @@ dist: xenial
 language: go
 services:
 - docker
+env:
+  global:
+    - DEP_VERSION="0.5.3"
 before_install:
 - export TZ=Europe/Vienna
 - IMAGE=keptn/unleash-service
@@ -15,6 +18,9 @@ before_install:
 - LAST_COMMIT="$(git log -1 --oneline)"
 - ./writeManifest.sh
 - cat MANIFEST
+- curl -L -s https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-linux-amd64 -o $GOPATH/bin/dep
+- chmod +x $GOPATH/bin/dep
+- dep ensure
 jobs:
   include:
   - stage: feature/bug
