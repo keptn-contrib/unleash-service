@@ -1,6 +1,7 @@
 package dtutils
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -39,16 +40,28 @@ type CustomProperties struct {
 	Approver            string
 }
 
+// Comment ...
+type Comment struct {
+	Comment string `json:"comment"`
+	User    string `json:"user"`
+	Context string `json:"context"`
+}
+
+// ClusterInternal ...
+var ClusterInternal = true
+
 // GetEventsFromEntity ...
 func GetEventsFromEntity(shkeptncontext, entityID string, startTime int) Events {
 	dthost, dtapitoken, err := getDynatraceCredentials()
+
 	if err != nil {
-		keptnutils.Error(shkeptncontext, err.Error())
+		keptnutils.Error(shkeptncontext, "Error when getting Dynatrace credentials: "+err.Error())
 	}
-	fmt.Println("https://" + dthost + "/api/v1/events?from=" + strconv.Itoa(startTime) + "&entityId=" + entityID + "&Api-Token=" + dtapitoken)
-	resp, err := http.Get("https://" + dthost + "/api/v1/events?from=" + strconv.Itoa(startTime) + "&entityId=" + entityID + "&Api-Token=" + dtapitoken)
+	url := "https://" + dthost + "/api/v1/events?from=" + strconv.Itoa(startTime) + "&entityId=" + entityID + "&Api-Token=" + dtapitoken
+	fmt.Println(url)
+	resp, err := http.Get(url)
 	if err != nil {
-		keptnutils.Error(shkeptncontext, err.Error())
+		keptnutils.Error(shkeptncontext, "Error when getting Dynatrace events for entity: "+err.Error())
 	}
 
 	defer resp.Body.Close()
@@ -66,9 +79,36 @@ func GetEventsFromEntity(shkeptncontext, entityID string, startTime int) Events 
 
 }
 
+// PostComment ...
+func PostComment(shkeptncontext string, problemID string, commentText string) {
+	dthost, dtapitoken, err := getDynatraceCredentials()
+	fmt.Println("host, token: ", dthost, dtapitoken)
+	if err != nil {
+		keptnutils.Error(shkeptncontext, err.Error())
+	}
+	comment := Comment{commentText, "keptn@keptn.sh", "keptn"}
+	payload := new(bytes.Buffer)
+	json.NewEncoder(payload).Encode(comment)
+	url := "https://" + dthost + "/api/v1/problem/details/" + problemID + "/comments?Api-Token=" + dtapitoken
+	fmt.Println(url)
+	res, err := http.Post(url, "application/json", payload)
+
+	if err != nil {
+		keptnutils.Error(shkeptncontext, "Error when posting comment to Dynatrace: "+err.Error())
+	}
+
+	defer res.Body.Close()
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		keptnutils.Error(shkeptncontext, "Reponse error when posting comment to Dynatrace: "+err.Error())
+		return
+	}
+	keptnutils.Debug(shkeptncontext, "Response from posting a comment: "+string(body))
+}
+
 func getDynatraceCredentials() (string, string, error) {
 
-	api, err := keptnutils.GetKubeAPI(false)
+	api, err := keptnutils.GetKubeAPI(ClusterInternal)
 	if err != nil {
 		return "", "", err
 	}
