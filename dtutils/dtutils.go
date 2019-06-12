@@ -57,8 +57,8 @@ func GetEventsFromEntity(shkeptncontext, entityID string, startTime int) Events 
 	if err != nil {
 		keptnutils.Error(shkeptncontext, "Error when getting Dynatrace credentials: "+err.Error())
 	}
+
 	url := "https://" + dthost + "/api/v1/events?from=" + strconv.Itoa(startTime) + "&entityId=" + entityID + "&Api-Token=" + dtapitoken
-	fmt.Println(url)
 	resp, err := http.Get(url)
 	if err != nil {
 		keptnutils.Error(shkeptncontext, "Error when getting Dynatrace events for entity: "+err.Error())

@@ -1,26 +1,23 @@
 package main
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
-	"net/http"
-	"net/http/cookiejar"
 	"os"
 	"strconv"
 
 	keptnutils "github.com/keptn/go-utils/pkg/utils"
 	"github.com/keptn/unleash-service/dtutils"
+	"github.com/keptn/unleash-service/unleashutils"
 
 	"github.com/cloudevents/sdk-go/pkg/cloudevents"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/client"
 	cloudeventshttp "github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 
 	"github.com/kelseyhightower/envconfig"
+	_ "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type envConfig struct {
@@ -76,6 +73,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 
 	keptnutils.Debug(shkeptncontext, fmt.Sprintf("Got Event Context: %+v", event.Context))
+	//keptnutils.Debug(shkeptncontext, fmt.Sprintf("Source of Event:"))
 
 	data := &ProblemEvent{}
 	if err := event.DataAs(data); err != nil {
@@ -84,8 +82,6 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	}
 
 	// abort if no sh.keptn.events.problem event
-	fmt.Println(event)
-
 	if event.Type() != "sh.keptn.events.problem" {
 		const errorMsg = "Received unexpected keptn event"
 		keptnutils.Error(shkeptncontext, errorMsg)
@@ -93,8 +89,19 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	}
 	var myEvent = dtutils.Event{}
 
+	if data.State != "OPEN" {
+		keptnutils.Error(shkeptncontext, "Problem with ProblemID "+data.PID+" is not OPEN. Aborting processing.")
+		return nil
+	}
+
+	// post comment to Dynatrace
+	dtutils.PostComment(shkeptncontext, data.PID, "starting unleash service, Problem state is: "+data.State)
+
+	fmt.Println(data)
+
 	// check for ranked events
 	var generalRootCauseFound = false
+
 	for _, rankedEvent := range data.ProblemDetails.RankedEvents {
 		if rankedEvent.IsRootCause {
 			generalRootCauseFound = true
@@ -130,7 +137,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		// TODO
 	}
 
-	fmt.Println("RemediationPRovider: " + myEvent.CustomProperties.RemediationProvider)
+	fmt.Println("RemediationProvider: " + myEvent.CustomProperties.RemediationProvider)
 
 	// // check for impacted entities
 	// for _, v := range data.ImpactedEntities {
@@ -139,44 +146,25 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	//dtEvents := dtutils.GetEventsFromEntity(entityID)
 
-	requestBody, err := json.Marshal(map[string]string{
-		"email": remediationUser,
-	})
-	if err != nil {
-		keptnutils.Error(shkeptncontext, err.Error())
-	}
-
 	unleashServerURL := os.Getenv("UNLEASH_SERVER_URL")
 	if unleashServerURL == "" {
 		unleashServerURL = "http://unleash-server-service.default"
 	}
+	keptnutils.Debug(shkeptncontext, "Using Unleash server located at: unleash-server-service.default")
 
-	// setup cookie jar to store login information
-	cookiejar, _ := cookiejar.New(nil)
-	client := &http.Client{
-		Jar: cookiejar,
-	}
-
-	// login to Unleash server
-	resp, err := client.Post(unleashServerURL+"/api/admin/login", "application/json", bytes.NewBuffer(requestBody))
-	if err != nil {
-		keptnutils.Error(shkeptncontext, fmt.Sprintf("Error when logging in to Unleash server: %s", err.Error()))
-	}
-	defer resp.Body.Close()
-	body, _ := ioutil.ReadAll(resp.Body)
+	client, body := unleashutils.LoginToServer(shkeptncontext, unleashServerURL, "keptn@keptn.sh")
 
 	keptnutils.Info(shkeptncontext, string(body))
 
 	// toggle feature flag to ON
-	keptnutils.Debug(shkeptncontext, "Toggling feature flag NAMENAMENAME to ON")
-	resp, err = client.Post(unleashServerURL+"/api/admin/features/ServeStaticReviews/toggle/on", "application/json", bytes.NewBuffer(requestBody))
-	if err != nil {
-		keptnutils.Error(shkeptncontext, fmt.Sprintf("Error when toggling feature in to Unleash server: %s", err.Error()))
-	}
-	defer resp.Body.Close()
-	body, _ = ioutil.ReadAll(resp.Body)
+	keptnutils.Debug(shkeptncontext, "Toggling feature flag FEATURENAME to ON")
+
+	unleashutils.ToggleFeatureFlag(shkeptncontext, client, unleashServerURL, "ServeStaticReviews", nil)
 
 	keptnutils.Info(shkeptncontext, string(body))
+
+	// post comment to Dynatrace
+	dtutils.PostComment(shkeptncontext, data.PID, "finished unleash service, Problem state is: "+data.State)
 
 	return nil //sendDeploymentFinishedEvent(shkeptncontext, event)
 }
@@ -218,6 +206,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 func _main(args []string, env envConfig) int {
 	keptnutils.ServiceName = "unleash-service"
+	dtutils.ClusterInternal = false
 
 	ctx := context.Background()
 
