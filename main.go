@@ -34,7 +34,7 @@ func main() {
 	os.Exit(_main(os.Args[1:], env))
 }
 
-// ProblemEvent ...
+// ProblemEvent describes a problem event received via a Dynatrace Problem notification
 type ProblemEvent struct {
 	State            string           `json:"state"`
 	ProblemID        string           `json:"problemID"`
@@ -45,25 +45,25 @@ type ProblemEvent struct {
 	ImpactedEntity   string           `json:"impactedEntity"`
 }
 
-// ProblemDetail ...
+// ProblemDetail descibes the details of a Dynatrace problem
 type ProblemDetail struct {
-	ID            string
-	StartTime     int
-	EndTime       int
-	DisplayName   string
-	ImpactLevel   string
-	Status        string
-	SeverityLevel string
-	CommentCount  int
+	ID            string `json:"id"`
+	StartTime     int    `json:"startTime"`
+	EndTime       int    `json:"endTime"`
+	DisplayName   string `json:"displayName"`
+	ImpactLevel   string `json:"impactLevel"`
+	Status        string `json:"status"`
+	SeverityLevel string `json:"severityLevel"`
+	CommentCount  int    `json:"commentCount"`
 	//TagsOfAffectedEntitites
-	RankedEvents []dtutils.Event
+	RankedEvents []dtutils.Event `json:"rankedEvents"`
 }
 
-// ImpactedEntity ...
+// ImpactedEntity describes the impacted entity of a Dynatrace problem
 type ImpactedEntity struct {
-	Type   string
-	Name   string
-	Entity string
+	Type   string `json:"type"`
+	Name   string `json:"name"`
+	Entity string `json:"entity"`
 }
 
 const remediationUser = "keptn@keptn.sh"
@@ -159,7 +159,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	// toggle feature flag to ON
 	keptnutils.Debug(shkeptncontext, "Toggling feature flag FEATURENAME to ON")
 
-	unleashutils.ToggleFeatureFlag(shkeptncontext, client, unleashServerURL, "ServeStaticReviews", nil)
+	unleashutils.SetFeatureFlag(shkeptncontext, client, unleashServerURL, "ServeStaticReviews", true, nil)
 
 	keptnutils.Info(shkeptncontext, string(body))
 

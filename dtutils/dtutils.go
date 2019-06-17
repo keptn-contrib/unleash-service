@@ -18,7 +18,7 @@ type Events struct {
 	Events          []Event
 }
 
-// Event ...
+// Event describes Dynatrace problem events
 type Event struct {
 	EventID          int
 	StartTime        int
@@ -32,7 +32,7 @@ type Event struct {
 	IsRootCause      bool
 }
 
-// CustomProperties ...
+// CustomProperties describes the custom properties attached to a Dynatrace event
 type CustomProperties struct {
 	RemediationProvider string
 	RemediationAction   string
@@ -40,17 +40,17 @@ type CustomProperties struct {
 	Approver            string
 }
 
-// Comment ...
+// Comment describes a comment (to be) attached to a Dynatrace problem
 type Comment struct {
 	Comment string `json:"comment"`
 	User    string `json:"user"`
 	Context string `json:"context"`
 }
 
-// ClusterInternal ...
+// ClusterInternal specifies if script is run inside the cluster or not
 var ClusterInternal = true
 
-// GetEventsFromEntity ...
+// GetEventsFromEntity gets events from a Dynatrace entity
 func GetEventsFromEntity(shkeptncontext, entityID string, startTime int) Events {
 	dthost, dtapitoken, err := getDynatraceCredentials()
 
@@ -79,7 +79,7 @@ func GetEventsFromEntity(shkeptncontext, entityID string, startTime int) Events 
 
 }
 
-// PostComment ...
+// PostComment posts a comment to a Dynatrace problem
 func PostComment(shkeptncontext string, problemID string, commentText string) {
 	dthost, dtapitoken, err := getDynatraceCredentials()
 	fmt.Println("host, token: ", dthost, dtapitoken)
