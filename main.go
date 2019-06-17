@@ -157,9 +157,10 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 	keptnutils.Info(shkeptncontext, string(body))
 
 	// toggle feature flag to ON
-	keptnutils.Debug(shkeptncontext, "Toggling feature flag FEATURENAME to ON")
+	featureToggleName := myEvent.CustomProperties.FeatureToggle
+	keptnutils.Debug(shkeptncontext, "Toggling feature flag "+featureToggleName+" to ON")
 
-	unleashutils.SetFeatureFlag(shkeptncontext, client, unleashServerURL, "ServeStaticReviews", true, nil)
+	unleashutils.SetFeatureFlag(shkeptncontext, client, unleashServerURL, featureToggleName, true, nil)
 
 	keptnutils.Info(shkeptncontext, string(body))
 

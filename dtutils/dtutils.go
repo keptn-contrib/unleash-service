@@ -37,6 +37,7 @@ type CustomProperties struct {
 	RemediationProvider string
 	RemediationAction   string
 	RemediationURL      string
+	FeatureToggle       string
 	Approver            string
 }
 
@@ -107,7 +108,7 @@ func PostComment(shkeptncontext string, problemID string, commentText string) {
 }
 
 func getDynatraceCredentials() (string, string, error) {
-
+	keptnutils.Debug(shkeptncontext, "Getting Dynatrace credentials. ClusterInternal="+strconv.FormatBool(ClusterInternal))
 	api, err := keptnutils.GetKubeAPI(ClusterInternal)
 	if err != nil {
 		return "", "", err
