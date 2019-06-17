@@ -82,6 +82,7 @@ func GetEventsFromEntity(shkeptncontext, entityID string, startTime int) Events 
 
 // PostComment posts a comment to a Dynatrace problem
 func PostComment(shkeptncontext string, problemID string, commentText string) {
+	keptnutils.Debug(shkeptncontext, "Getting Dynatrace credentials. ClusterInternal="+strconv.FormatBool(ClusterInternal))
 	dthost, dtapitoken, err := getDynatraceCredentials()
 	fmt.Println("host, token: ", dthost, dtapitoken)
 	if err != nil {
@@ -108,7 +109,6 @@ func PostComment(shkeptncontext string, problemID string, commentText string) {
 }
 
 func getDynatraceCredentials() (string, string, error) {
-	keptnutils.Debug(shkeptncontext, "Getting Dynatrace credentials. ClusterInternal="+strconv.FormatBool(ClusterInternal))
 	api, err := keptnutils.GetKubeAPI(ClusterInternal)
 	if err != nil {
 		return "", "", err
