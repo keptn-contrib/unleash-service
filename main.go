@@ -116,10 +116,10 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 					keptnutils.Info(shkeptncontext, "Root cause of problem: "+strconv.Itoa(event.EventID))
 					fmt.Println("EntityName: " + event.EntityName)
 
-					fmt.Println("RemediationProvider: " + event.CustomProperties.RemediationProvider)
+					fmt.Println("RemediationProvider with root cause: " + event.CustomProperties.RemediationProvider)
 				} else {
 
-					fmt.Println("RemediationProvider: " + event.CustomProperties.RemediationProvider)
+					fmt.Println("RemediationProvider without root cause: " + event.CustomProperties.RemediationProvider)
 				}
 
 			}
@@ -137,7 +137,7 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 		// TODO
 	}
 
-	fmt.Println("RemediationProvider: " + myEvent.CustomProperties.RemediationProvider)
+	fmt.Println("RemediationProvider from myEvent: " + myEvent.CustomProperties.RemediationProvider)
 
 	// // check for impacted entities
 	// for _, v := range data.ImpactedEntities {
