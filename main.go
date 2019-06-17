@@ -207,7 +207,6 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 func _main(args []string, env envConfig) int {
 	keptnutils.ServiceName = "unleash-service"
-	dtutils.ClusterInternal = false
 
 	ctx := context.Background()
 
