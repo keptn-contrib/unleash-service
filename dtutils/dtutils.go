@@ -29,7 +29,7 @@ type Event struct {
 	ImpactLevel      string
 	EventType        string
 	CustomProperties CustomProperties
-	IsRootCause      bool
+	IsRootCause      bool `json:"isRootCause"`
 }
 
 // CustomProperties describes the custom properties attached to a Dynatrace event

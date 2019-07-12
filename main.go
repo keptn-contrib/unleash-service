@@ -57,6 +57,7 @@ type ProblemDetail struct {
 	CommentCount  int    `json:"commentCount"`
 	//TagsOfAffectedEntitites
 	RankedEvents []dtutils.Event `json:"rankedEvents"`
+	HasRootCause bool
 }
 
 // ImpactedEntity describes the impacted entity of a Dynatrace problem
@@ -99,34 +100,30 @@ func gotEvent(ctx context.Context, event cloudevents.Event) error {
 
 	fmt.Println(data)
 
-	// check for ranked events
+	// assume there is no root cause yet
 	var generalRootCauseFound = false
 
+	fmt.Println("has root cause: " + strconv.FormatBool(data.ProblemDetails.HasRootCause))
+
+	// parse events from dynatrace
 	for _, rankedEvent := range data.ProblemDetails.RankedEvents {
 		if rankedEvent.IsRootCause {
 			generalRootCauseFound = true
 			keptnutils.Debug(shkeptncontext, "Root cause entity ID: "+rankedEvent.EntityID)
 			events := dtutils.GetEventsFromEntity(shkeptncontext, rankedEvent.EntityID, rankedEvent.StartTime)
-			var rootCauseFound = false
 
 			for _, event := range events.Events {
-				if event.EventType == "CUSTOM_CONFIGURATION" && event.IsRootCause {
-					rootCauseFound = true
-					myEvent = event
-					keptnutils.Info(shkeptncontext, "Root cause of problem: "+strconv.Itoa(event.EventID))
-					fmt.Println("EntityName: " + event.EntityName)
+				if event.EventType == "CUSTOM_CONFIGURATION" {
+					if event.CustomProperties.RemediationProvider == "unleash" {
+						myEvent = event
+						keptnutils.Debug(shkeptncontext, "CUSTOM_CONFIGURATION with remediation provider 'unleash' event found: "+strconv.Itoa(event.EventID))
+						//fmt.Println("EntityName: " + event.EntityName)
 
-					fmt.Println("RemediationProvider with root cause: " + event.CustomProperties.RemediationProvider)
-				} else {
-
-					fmt.Println("RemediationProvider without root cause: " + event.CustomProperties.RemediationProvider)
+						//fmt.Println("RemediationProvider with root cause: " + event.CustomProperties.RemediationProvider)
+					}
 				}
+			}
 
-			}
-			if !rootCauseFound {
-				keptnutils.Info(shkeptncontext, "No root cause with CUSTOM_CONFIGURATION found")
-				//return nil // errors.New("No root cause with CUSTOM_CONFIGURATION found")
-			}
 		}
 	}
 	if !generalRootCauseFound {

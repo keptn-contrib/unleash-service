@@ -14,6 +14,7 @@ If you want to locally develop, test and run the service, there are some steps t
     ```
 
 - Set environment variable for your unleash server `UNLEASH_SERVER_URL`, e.g., in your VSCode launch.json: 
+
     ```
     {
         // Use IntelliSense to learn about possible attributes.
