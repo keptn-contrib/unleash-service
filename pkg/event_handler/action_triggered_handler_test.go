@@ -147,7 +147,7 @@ func TestActionTriggeredHandler_HandleEvent(t *testing.T) {
       "name": "FeatureToggle",
       "action": "toggle-feature",
       "description": "toggle a feature",
-      "values": {
+      "value": {
         "EnableItemCache": "on"
       }
     },
