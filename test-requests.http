@@ -1,12 +1,9 @@
-# Unleash Service
+# action.triggered
+POST http://localhost:8080/
+Accept: application/json
+Cache-Control: no-cache
+Content-Type: application/cloudevents+json
 
-This service allows to interact with the open source feature toggle system [unleash](https://github.com/unleash). 
-Triggered by a Keptn CloudEvent of the type `sh.keptn.event.action.triggered`. After the features specified in the event 
-have been toggled, it sends out an `sh.keptn.event.action.finished` event.
-
-Example payload for an approval.triggered event:
-
-```
 {
   "type": "sh.keptn.event.action.triggered",
   "specversion": "0.2",
@@ -42,21 +39,5 @@ Example payload for an approval.triggered event:
     }
   }
 }
-```
 
-## Installation
-
-To deploy the `unleash-service`, execute the following command:
-
-```
-kubectl apply -f https://github.com/keptn-contrib/unleash-service/tree/master/deploy/service.yaml
-```
-
-## Uninstall the unleash-service
-
-To uninstall the service, execute:
-
-```
-kubectl delete -f https://github.com/keptn-contrib/unleash-service/tree/master/deploy/service.yaml
-```
-
+###
