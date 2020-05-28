@@ -59,7 +59,9 @@ func (eh ActionTriggeredHandler) HandleEvent() error {
 }
 
 func (eh ActionTriggeredHandler) sendFinishedEvent(actionTriggeredEvent keptn.ActionTriggeredEventData, result keptn.ActionResultType, status keptn.ActionStatusType) error {
-	keptnHandler, err := keptn.NewKeptn(&eh.Event, keptn.KeptnOpts{})
+	keptnHandler, err := keptn.NewKeptn(&eh.Event, keptn.KeptnOpts{
+		EventBrokerURL: os.Getenv("EVENTBROKER"),
+	})
 	if err != nil {
 		eh.Logger.Error("Could not initialize Keptn handler: " + err.Error())
 		return err
