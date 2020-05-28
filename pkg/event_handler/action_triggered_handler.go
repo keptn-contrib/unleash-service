@@ -38,15 +38,28 @@ func (eh ActionTriggeredHandler) HandleEvent() error {
 		return nil
 	}
 
-	for feature, value := range actionTriggeredEvent.Action.Values {
-		err = toggleFeature(feature, value)
+	values, ok := actionTriggeredEvent.Action.Value.(map[string]interface{})
+
+	if !ok {
+		eh.Logger.Error("Could not parse action.value")
+		err = eh.sendFinishedEvent(*actionTriggeredEvent, keptn.ActionResultPass, keptn.ActionStatusErrored)
+		return errors.New("could not parse action.value")
+	}
+
+	for feature, value := range values {
+		if _, ok := value.(string); !ok {
+			eh.Logger.Error("feature toggle remediation action not well formed: " + err.Error())
+			return errors.New("feature toggle remediation action not well formed: " + err.Error())
+		}
+		err = toggleFeature(feature, value.(string))
 		if err != nil {
-			eh.Logger.Error("Could not set feature " + feature + " to value " + value + ": " + err.Error())
+			eh.Logger.Error("Could not set feature " + feature + " to value " + value.(string) + ": " + err.Error())
 			err = eh.sendFinishedEvent(*actionTriggeredEvent, keptn.ActionResultPass, keptn.ActionStatusErrored)
 			if err != nil {
 				eh.Logger.Error("could not send action-finished event: " + err.Error())
 				return err
 			}
+			return err
 		}
 	}
 
@@ -79,7 +92,7 @@ func (eh ActionTriggeredHandler) sendFinishedEvent(actionTriggeredEvent keptn.Ac
 			Status: status,
 		},
 		Problem: actionTriggeredEvent.Problem,
-		Values:  actionTriggeredEvent.Action.Values,
+		Value:   actionTriggeredEvent.Action.Value,
 		Labels:  actionTriggeredEvent.Labels,
 	}
 
