@@ -38,11 +38,18 @@ func (eh ActionTriggeredHandler) HandleEvent() error {
 		return nil
 	}
 
+	// Send action.started event
+	if sendErr := eh.sendEvent(keptn.ActionStartedEventType, eh.getActionStartedEvent(*actionTriggeredEvent)); sendErr != nil {
+		eh.Logger.Error(sendErr.Error())
+		return errors.New(sendErr.Error())
+	}
+
 	values, ok := actionTriggeredEvent.Action.Value.(map[string]interface{})
 
 	if !ok {
 		eh.Logger.Error("Could not parse action.value")
-		err = eh.sendFinishedEvent(*actionTriggeredEvent, keptn.ActionResultPass, keptn.ActionStatusErrored)
+		err = eh.sendEvent(keptn.ActionFinishedEventType,
+			eh.getActionFinishedEvent(keptn.ActionResultPass, keptn.ActionStatusErrored, *actionTriggeredEvent))
 		return errors.New("could not parse action.value")
 	}
 
@@ -54,8 +61,9 @@ func (eh ActionTriggeredHandler) HandleEvent() error {
 		err = toggleFeature(feature, value.(string))
 		if err != nil {
 			eh.Logger.Error("Could not set feature " + feature + " to value " + value.(string) + ": " + err.Error())
-			err = eh.sendFinishedEvent(*actionTriggeredEvent, keptn.ActionResultPass, keptn.ActionStatusErrored)
-			if err != nil {
+			sendErr := eh.sendEvent(keptn.ActionFinishedEventType,
+				eh.getActionFinishedEvent(keptn.ActionResultPass, keptn.ActionStatusErrored, *actionTriggeredEvent))
+			if sendErr != nil {
 				eh.Logger.Error("could not send action-finished event: " + err.Error())
 				return err
 			}
@@ -63,7 +71,8 @@ func (eh ActionTriggeredHandler) HandleEvent() error {
 		}
 	}
 
-	err = eh.sendFinishedEvent(*actionTriggeredEvent, keptn.ActionResultPass, keptn.ActionStatusSucceeded)
+	err = eh.sendEvent(keptn.ActionFinishedEventType,
+		eh.getActionFinishedEvent(keptn.ActionResultPass, keptn.ActionStatusSucceeded, *actionTriggeredEvent))
 	if err != nil {
 		eh.Logger.Error("could not send action-finished event: " + err.Error())
 		return err
@@ -71,7 +80,32 @@ func (eh ActionTriggeredHandler) HandleEvent() error {
 	return nil
 }
 
-func (eh ActionTriggeredHandler) sendFinishedEvent(actionTriggeredEvent keptn.ActionTriggeredEventData, result keptn.ActionResultType, status keptn.ActionStatusType) error {
+func (eh ActionTriggeredHandler) getActionFinishedEvent(result keptn.ActionResultType, status keptn.ActionStatusType,
+	actionTriggeredEvent keptn.ActionTriggeredEventData) keptn.ActionFinishedEventData {
+
+	return keptn.ActionFinishedEventData{
+		Project: actionTriggeredEvent.Project,
+		Service: actionTriggeredEvent.Service,
+		Stage:   actionTriggeredEvent.Stage,
+		Action: keptn.ActionResult{
+			Result: result,
+			Status: status,
+		},
+		Labels: actionTriggeredEvent.Labels,
+	}
+}
+
+func (eh ActionTriggeredHandler) getActionStartedEvent(actionTriggeredEvent keptn.ActionTriggeredEventData) keptn.ActionStartedEventData {
+
+	return keptn.ActionStartedEventData{
+		Project: actionTriggeredEvent.Project,
+		Service: actionTriggeredEvent.Service,
+		Stage:   actionTriggeredEvent.Stage,
+		Labels:  actionTriggeredEvent.Labels,
+	}
+}
+
+func (eh ActionTriggeredHandler) sendEvent(eventType string, data interface{}) error {
 	keptnHandler, err := keptn.NewKeptn(&eh.Event, keptn.KeptnOpts{
 		EventBrokerURL: os.Getenv("EVENTBROKER"),
 	})
@@ -83,34 +117,21 @@ func (eh ActionTriggeredHandler) sendFinishedEvent(actionTriggeredEvent keptn.Ac
 	source, _ := url.Parse("unleash-service")
 	contentType := "application/json"
 
-	actionFinishedEvent := &keptn.ActionFinishedEventData{
-		Project: actionTriggeredEvent.Project,
-		Service: actionTriggeredEvent.Stage,
-		Stage:   actionTriggeredEvent.Stage,
-		Action: keptn.ActionResult{
-			Result: result,
-			Status: status,
-		},
-		Problem: actionTriggeredEvent.Problem,
-		Value:   actionTriggeredEvent.Action.Value,
-		Labels:  actionTriggeredEvent.Labels,
-	}
-
 	event := cloudevents.Event{
 		Context: cloudevents.EventContextV02{
 			ID:          uuid.New().String(),
 			Time:        &types.Timestamp{Time: time.Now()},
-			Type:        keptn.ActionFinishedEventType,
+			Type:        eventType,
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
-			Extensions:  map[string]interface{}{"shkeptncontext": keptnHandler.KeptnContext},
+			Extensions:  map[string]interface{}{"shkeptncontext": keptnHandler.KeptnContext, "triggerid": eh.Event.ID()},
 		}.AsV02(),
-		Data: actionFinishedEvent,
+		Data: data,
 	}
 
 	err = keptnHandler.SendCloudEvent(event)
 	if err != nil {
-		eh.Logger.Error("Could not send action.finished event: " + err.Error())
+		eh.Logger.Error("Could not send " + eventType + " event: " + err.Error())
 		return err
 	}
 	return nil

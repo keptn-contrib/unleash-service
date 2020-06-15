@@ -124,7 +124,7 @@ func TestActionTriggeredHandler_HandleEvent(t *testing.T) {
 		name         string
 		fields       fields
 		wantErr      bool
-		wantEvent    *keptnapi.KeptnContextExtendedCE
+		wantEvent    []*keptnapi.KeptnContextExtendedCE
 		returnStatus int
 	}{
 		{
@@ -172,20 +172,33 @@ func TestActionTriggeredHandler_HandleEvent(t *testing.T) {
 				},
 			},
 			wantErr: false,
-			wantEvent: &keptnapi.KeptnContextExtendedCE{
-				Contenttype: "application/json",
-				Data: []byte(`{
+			wantEvent: []*keptnapi.KeptnContextExtendedCE{
+				{
+					Contenttype: "application/json",
+					Data: []byte(`{    
+    "project": "sockshop",
+    "stage": "staging",
+    "service": "carts",
+    "labels": {
+      "testid": "12345",
+      "buildnr": "build17",
+      "runby": "JohnDoe"
+    }
+  }`),
+					Extensions:     nil,
+					ID:             "",
+					Shkeptncontext: "",
+					Source:         nil,
+					Specversion:    "",
+					Time:           strfmt.DateTime{},
+					Type:           stringp(keptn.ActionStartedEventType),
+				},
+				{
+					Contenttype: "application/json",
+					Data: []byte(`{
     "action": {
       "result": "pass",
       "status": "succeeded",
-    },
-    "problem": {
-      "ImpactedEntity": "carts-primary",
-      "PID": "93a5-3fas-a09d-8ckf",
-      "ProblemDetails": "Pod name",
-      "ProblemID": "762",
-      "ProblemTitle": "cpu_usage_sockshop_carts",
-      "State": "OPEN"
     },
     "project": "sockshop",
     "stage": "staging",
@@ -196,14 +209,14 @@ func TestActionTriggeredHandler_HandleEvent(t *testing.T) {
       "runby": "JohnDoe"
     }
   }`),
-				Extensions:     nil,
-				ID:             "",
-				Shkeptncontext: "",
-				Source:         nil,
-				Specversion:    "",
-				Time:           strfmt.DateTime{},
-				Type:           stringp(keptn.ActionFinishedEventType),
-			},
+					Extensions:     nil,
+					ID:             "",
+					Shkeptncontext: "",
+					Source:         nil,
+					Specversion:    "",
+					Time:           strfmt.DateTime{},
+					Type:           stringp(keptn.ActionFinishedEventType),
+				}},
 			returnStatus: 200,
 		},
 	}
@@ -218,15 +231,17 @@ func TestActionTriggeredHandler_HandleEvent(t *testing.T) {
 				t.Errorf("HandleEvent() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
-			select {
-			case msg := <-ch:
-				t.Logf("Received event on event broker: %v", msg)
+			for i := 0; i < len(tt.wantEvent); i++ {
+				select {
+				case msg := <-ch:
+					t.Logf("Received event on event broker: %v", msg)
 
-				if *msg.Type != *tt.wantEvent.Type {
-					t.Errorf("HandleEvent() sent event type = %v, wantEventType %v", *msg.Type, *tt.wantEvent.Type)
+					if *msg.Type != *tt.wantEvent[i].Type {
+						t.Errorf("HandleEvent() sent event type = %v, wantEventType %v", *msg.Type, *tt.wantEvent[i].Type)
+					}
+				case <-time.After(5 * time.Second):
+					t.Errorf("Message did not make it to the receiver")
 				}
-			case <-time.After(5 * time.Second):
-				t.Errorf("Message did not make it to the receiver")
 			}
 		})
 	}
