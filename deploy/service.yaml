@@ -15,6 +15,7 @@ spec:
       labels:
         run: unleash-service
     spec:
+      serviceAccountName: keptn-default
       containers:
         - name: unleash-service
           image: keptncontrib/unleash-service:latest
