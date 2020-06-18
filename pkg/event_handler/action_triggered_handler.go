@@ -3,15 +3,16 @@ package event_handler
 import (
 	"errors"
 	"fmt"
-	cloudevents "github.com/cloudevents/sdk-go"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
-	"github.com/google/uuid"
-	keptn "github.com/keptn/go-utils/pkg/lib"
 	"net/http"
 	"net/url"
 	"os"
 	"strconv"
 	"time"
+
+	cloudevents "github.com/cloudevents/sdk-go"
+	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+	"github.com/google/uuid"
+	keptn "github.com/keptn/go-utils/pkg/lib"
 )
 
 const ActionToggleFeature = "toggle-feature"
@@ -50,13 +51,13 @@ func (eh ActionTriggeredHandler) HandleEvent() error {
 		eh.Logger.Error("Could not parse action.value")
 		err = eh.sendEvent(keptn.ActionFinishedEventType,
 			eh.getActionFinishedEvent(keptn.ActionResultPass, keptn.ActionStatusErrored, *actionTriggeredEvent))
-		return errors.New("could not parse action.value")
+		return errors.New("Could not parse action.value")
 	}
 
 	for feature, value := range values {
 		if _, ok := value.(string); !ok {
-			eh.Logger.Error("feature toggle remediation action not well formed: " + err.Error())
-			return errors.New("feature toggle remediation action not well formed: " + err.Error())
+			eh.Logger.Error("Value property of feature toggle remediation action not valid. It must be set: TOGGLENAME:\"on\" or TOGGLENAME:\"off\"")
+			return errors.New("Value property of feature toggle remediation action not valid. It must be set: TOGGLENAME:\"on\" or TOGGLENAME:\"off\"")
 		}
 		err = toggleFeature(feature, value.(string))
 		if err != nil {
