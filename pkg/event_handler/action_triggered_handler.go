@@ -124,7 +124,7 @@ func (eh ActionTriggeredHandler) sendEvent(eventType string, data interface{}) e
 			Type:        eventType,
 			Source:      types.URLRef{URL: *source},
 			ContentType: &contentType,
-			Extensions:  map[string]interface{}{"shkeptncontext": keptnHandler.KeptnContext, "triggerid": eh.Event.ID()},
+			Extensions:  map[string]interface{}{"shkeptncontext": keptnHandler.KeptnContext, "triggeredid": eh.Event.ID()},
 		}.AsV02(),
 		Data: data,
 	}
