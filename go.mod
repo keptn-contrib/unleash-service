@@ -7,7 +7,7 @@ require (
 	github.com/go-openapi/strfmt v0.19.3
 	github.com/google/uuid v1.1.1
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.6.3-0.20200615074910-2565441cb79d
+	github.com/keptn/go-utils v0.7.0
 )
 
 // replace github.com/keptn/go-utils => ../../keptn/go-utils
