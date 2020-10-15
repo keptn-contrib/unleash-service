@@ -49,7 +49,7 @@ Example payload for an approval.triggered event:
 To deploy the `unleash-service`, execute the following command:
 
 ```
-kubectl apply -f https://github.com/keptn-contrib/unleash-service/tree/master/deploy/service.yaml
+kubectl apply -f https://github.com/keptn-contrib/unleash-service/tree/master/deploy/service.yaml -n keptn
 ```
 
 ## Uninstall the unleash-service
@@ -57,6 +57,6 @@ kubectl apply -f https://github.com/keptn-contrib/unleash-service/tree/master/de
 To uninstall the service, execute:
 
 ```
-kubectl delete -f https://github.com/keptn-contrib/unleash-service/tree/master/deploy/service.yaml
+kubectl delete -f https://github.com/keptn-contrib/unleash-service/tree/master/deploy/service.yaml -n keptn
 ```
 
