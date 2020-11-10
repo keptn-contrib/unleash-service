@@ -21,7 +21,7 @@ spec:
             - containerPort: 8080
           env:
             - name: EVENTBROKER
-              value: 'http://event-broker/keptn'
+              value: 'http://localhost:8081/event'
             - name: CONFIGURATION_SERVICE
               value: 'http://configuration-service:8080'
           envFrom:

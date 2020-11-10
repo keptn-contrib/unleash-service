@@ -2,11 +2,11 @@ package event_handler
 
 import (
 	"encoding/json"
-	cloudevents "github.com/cloudevents/sdk-go"
-	"github.com/cloudevents/sdk-go/pkg/cloudevents/types"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/go-openapi/strfmt"
 	keptnapi "github.com/keptn/go-utils/pkg/api/models"
-	keptn "github.com/keptn/go-utils/pkg/lib"
+	keptnevents "github.com/keptn/go-utils/pkg/lib"
+	keptn "github.com/keptn/go-utils/pkg/lib/keptn"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -131,18 +131,7 @@ func TestActionTriggeredHandler_HandleEvent(t *testing.T) {
 			name: "Succeed",
 			fields: fields{
 				Logger: keptn.NewLogger("", "", ""),
-				Event: cloudevents.Event{
-					Context: &cloudevents.EventContextV02{
-						SpecVersion: "0.2",
-						Type:        "sh.keptn.events.tests-finished",
-						Source:      types.URLRef{},
-						ID:          "",
-						Time:        nil,
-						SchemaURL:   nil,
-						ContentType: stringp("application/json"),
-						Extensions:  nil,
-					},
-					Data: []byte(`{
+				Event: getTestCloudEvent("sh.keptn.events.tests-finished", `{
     "action": {
       "name": "FeatureToggle",
       "action": "toggle-feature",
@@ -168,8 +157,6 @@ func TestActionTriggeredHandler_HandleEvent(t *testing.T) {
       "runby": "JohnDoe"
     }
   }`),
-					DataEncoded: false,
-				},
 			},
 			wantErr: false,
 			wantEvent: []*keptnapi.KeptnContextExtendedCE{
@@ -191,7 +178,7 @@ func TestActionTriggeredHandler_HandleEvent(t *testing.T) {
 					Source:         nil,
 					Specversion:    "",
 					Time:           strfmt.DateTime{},
-					Type:           stringp(keptn.ActionStartedEventType),
+					Type:           stringp(keptnevents.ActionStartedEventType),
 				},
 				{
 					Contenttype: "application/json",
@@ -215,7 +202,7 @@ func TestActionTriggeredHandler_HandleEvent(t *testing.T) {
 					Source:         nil,
 					Specversion:    "",
 					Time:           strfmt.DateTime{},
-					Type:           stringp(keptn.ActionFinishedEventType),
+					Type:           stringp(keptnevents.ActionFinishedEventType),
 				}},
 			returnStatus: 200,
 		},
@@ -245,6 +232,19 @@ func TestActionTriggeredHandler_HandleEvent(t *testing.T) {
 			}
 		})
 	}
+}
+
+func getTestCloudEvent(eventType, data string) cloudevents.Event {
+	event := cloudevents.NewEvent()
+
+	var dataItf interface{}
+
+	_ = json.Unmarshal([]byte(data), &dataItf)
+
+	event.SetType(eventType)
+	event.SetDataContentType(cloudevents.ApplicationJSON)
+	event.SetData(cloudevents.ApplicationJSON, dataItf)
+	return event
 }
 
 func stringp(s string) *string {
