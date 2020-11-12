@@ -1,8 +1,9 @@
 package event_handler
 
 import (
-	"github.com/cloudevents/sdk-go/pkg/cloudevents"
-	keptn "github.com/keptn/go-utils/pkg/lib"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+	keptnevents "github.com/keptn/go-utils/pkg/lib"
+	"github.com/keptn/go-utils/pkg/lib/keptn"
 )
 
 type EventHandler interface {
@@ -12,7 +13,7 @@ type EventHandler interface {
 func NewEventHandler(event cloudevents.Event, logger *keptn.Logger) (EventHandler, error) {
 	logger.Debug("Received event: " + event.Type())
 	switch event.Type() {
-	case keptn.ActionTriggeredEventType:
+	case keptnevents.ActionTriggeredEventType:
 		return &ActionTriggeredHandler{
 			Logger: logger,
 			Event:  event,
