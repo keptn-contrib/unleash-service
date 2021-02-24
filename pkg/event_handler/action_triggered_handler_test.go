@@ -5,8 +5,8 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/go-openapi/strfmt"
 	keptnapi "github.com/keptn/go-utils/pkg/api/models"
-	keptnevents "github.com/keptn/go-utils/pkg/lib"
-	keptn "github.com/keptn/go-utils/pkg/lib/keptn"
+	"github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -178,7 +178,7 @@ func TestActionTriggeredHandler_HandleEvent(t *testing.T) {
 					Source:         nil,
 					Specversion:    "",
 					Time:           strfmt.DateTime{},
-					Type:           stringp(keptnevents.ActionStartedEventType),
+					Type:           stringp(keptnv2.GetStartedEventType(keptnv2.ActionTaskName)),
 				},
 				{
 					Contenttype: "application/json",
@@ -202,7 +202,7 @@ func TestActionTriggeredHandler_HandleEvent(t *testing.T) {
 					Source:         nil,
 					Specversion:    "",
 					Time:           strfmt.DateTime{},
-					Type:           stringp(keptnevents.ActionFinishedEventType),
+					Type:           stringp(keptnv2.GetFinishedEventType(keptnv2.ActionTaskName)),
 				}},
 			returnStatus: 200,
 		},
