@@ -11,8 +11,14 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
-.vscode
+vendor/*
+.DS_Store
 
+# binaries (created by go build on Linux/OSX)
+main
+unleash-service
+
+# only ignore contents of local .idea
 .idea/*
-# allow shared run configurations
+# but allow .idea shared run configurations
 !.idea/runConfigurations/
