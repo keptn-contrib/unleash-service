@@ -10,7 +10,7 @@ Example payload for an approval.triggered event:
 {
   "type": "sh.keptn.event.action.triggered",
   "specversion": "0.2",
-  "source": "https://github.com/keptn/keptn/remediation-service",
+  "source": "keptn-user",
   "id": "f2b878d3-03c0-4e8f-bc3f-454bc1b3d79d",
   "time": "2019-06-07T07:02:15.64489Z",
   "contenttype": "application/json",
@@ -44,12 +44,24 @@ Example payload for an approval.triggered event:
 }
 ```
 
+## Compatibility Matrix
+
+Please always double check the version of Keptn you are using compared to the version of this service, and follow the compatibility matrix below.
+
+
+| Keptn Version    | [Unleash Service Image](https://hub.docker.com/r/keptncontrib/unleash-service/tags) |
+|:----------------:|:----------------------------------------:|
+|       0.6.x      | keptncontrib/unleash-service:0.1.0  |
+|       0.7.x      | keptncontrib/unleash-service:0.2.0  |
+|       0.8.x      | keptncontrib/unleash-service:0.3.0  |
+
+
 ## Installation
 
-To deploy the `unleash-service`, execute the following command:
+To deploy the `unleash-service` in version 0.3.0, execute the following command:
 
 ```
-kubectl apply -f https://github.com/keptn-contrib/unleash-service/tree/master/deploy/service.yaml -n keptn
+kubectl apply -f https://github.com/keptn-contrib/unleash-service/tree/release-0.3.0/deploy/service.yaml -n keptn
 ```
 
 ## Uninstall the unleash-service
@@ -57,6 +69,6 @@ kubectl apply -f https://github.com/keptn-contrib/unleash-service/tree/master/de
 To uninstall the service, execute:
 
 ```
-kubectl delete -f https://github.com/keptn-contrib/unleash-service/tree/master/deploy/service.yaml -n keptn
+kubectl delete -f https://github.com/keptn-contrib/unleash-service/tree/release-0.3.0/deploy/service.yaml -n keptn
 ```
 
