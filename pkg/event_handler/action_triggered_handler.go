@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	keptnevents "github.com/keptn/go-utils/pkg/lib"
 	"github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"net/http"
@@ -24,7 +23,7 @@ func (eh ActionTriggeredHandler) HandleEvent() error {
 	var shkeptncontext string
 	_ = eh.Event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
 
-	actionTriggeredEvent := &keptnevents.ActionTriggeredEventData{}
+	actionTriggeredEvent := &keptnv2.ActionTriggeredEventData{}
 
 	err := eh.Event.DataAs(actionTriggeredEvent)
 	if err != nil {
@@ -38,7 +37,7 @@ func (eh ActionTriggeredHandler) HandleEvent() error {
 	}
 
 	// Send action.started event
-	if sendErr := eh.sendEvent(keptnevents.ActionStartedEventType, eh.getActionStartedEvent(*actionTriggeredEvent)); sendErr != nil {
+	if sendErr := eh.sendEvent(keptnv2.GetStartedEventType(keptnv2.ActionTaskName), eh.getActionStartedEvent(*actionTriggeredEvent)); sendErr != nil {
 		eh.Logger.Error(sendErr.Error())
 		return errors.New(sendErr.Error())
 	}
@@ -47,8 +46,8 @@ func (eh ActionTriggeredHandler) HandleEvent() error {
 
 	if !ok {
 		eh.Logger.Error("Could not parse action.value")
-		err = eh.sendEvent(keptnevents.ActionFinishedEventType,
-			eh.getActionFinishedEvent(keptnevents.ActionResultPass, keptnevents.ActionStatusErrored, *actionTriggeredEvent))
+		err = eh.sendEvent(keptnv2.GetFinishedEventType(keptnv2.ActionTaskName),
+			eh.getActionFinishedEvent(keptnv2.ResultPass, keptnv2.StatusErrored, *actionTriggeredEvent))
 		return errors.New("Could not parse action.value")
 	}
 
@@ -60,8 +59,8 @@ func (eh ActionTriggeredHandler) HandleEvent() error {
 		err = toggleFeature(feature, value.(string))
 		if err != nil {
 			eh.Logger.Error("Could not set feature " + feature + " to value " + value.(string) + ": " + err.Error())
-			sendErr := eh.sendEvent(keptnevents.ActionFinishedEventType,
-				eh.getActionFinishedEvent(keptnevents.ActionResultPass, keptnevents.ActionStatusErrored, *actionTriggeredEvent))
+			sendErr := eh.sendEvent(keptnv2.GetFinishedEventType(keptnv2.ActionTaskName),
+				eh.getActionFinishedEvent(keptnv2.ResultPass, keptnv2.StatusErrored, *actionTriggeredEvent))
 			if sendErr != nil {
 				eh.Logger.Error("could not send action-finished event: " + err.Error())
 				return err
@@ -70,8 +69,8 @@ func (eh ActionTriggeredHandler) HandleEvent() error {
 		}
 	}
 
-	err = eh.sendEvent(keptnevents.ActionFinishedEventType,
-		eh.getActionFinishedEvent(keptnevents.ActionResultPass, keptnevents.ActionStatusSucceeded, *actionTriggeredEvent))
+	err = eh.sendEvent(keptnv2.GetFinishedEventType(keptnv2.ActionTaskName),
+		eh.getActionFinishedEvent(keptnv2.ResultPass, keptnv2.StatusSucceeded, *actionTriggeredEvent))
 	if err != nil {
 		eh.Logger.Error("could not send action-finished event: " + err.Error())
 		return err
@@ -79,28 +78,31 @@ func (eh ActionTriggeredHandler) HandleEvent() error {
 	return nil
 }
 
-func (eh ActionTriggeredHandler) getActionFinishedEvent(result keptnevents.ActionResultType, status keptnevents.ActionStatusType,
-	actionTriggeredEvent keptnevents.ActionTriggeredEventData) keptnevents.ActionFinishedEventData {
+func (eh ActionTriggeredHandler) getActionFinishedEvent(result keptnv2.ResultType, status keptnv2.StatusType,
+	actionTriggeredEvent keptnv2.ActionTriggeredEventData) keptnv2.ActionFinishedEventData {
 
-	return keptnevents.ActionFinishedEventData{
-		Project: actionTriggeredEvent.Project,
-		Service: actionTriggeredEvent.Service,
-		Stage:   actionTriggeredEvent.Stage,
-		Action: keptnevents.ActionResult{
-			Result: result,
-			Status: status,
+	return keptnv2.ActionFinishedEventData{
+		EventData: keptnv2.EventData{
+			Project: actionTriggeredEvent.Project,
+			Stage:   actionTriggeredEvent.Stage,
+			Service: actionTriggeredEvent.Service,
+			Labels:  actionTriggeredEvent.Labels,
+			Status:  status,
+			Result:  result,
 		},
-		Labels: actionTriggeredEvent.Labels,
+		Action: keptnv2.ActionData{},
 	}
 }
 
-func (eh ActionTriggeredHandler) getActionStartedEvent(actionTriggeredEvent keptnevents.ActionTriggeredEventData) keptnevents.ActionStartedEventData {
+func (eh ActionTriggeredHandler) getActionStartedEvent(actionTriggeredEvent keptnv2.ActionTriggeredEventData) keptnv2.ActionStartedEventData {
 
-	return keptnevents.ActionStartedEventData{
-		Project: actionTriggeredEvent.Project,
-		Service: actionTriggeredEvent.Service,
-		Stage:   actionTriggeredEvent.Stage,
-		Labels:  actionTriggeredEvent.Labels,
+	return keptnv2.ActionStartedEventData{
+		EventData: keptnv2.EventData{
+			Project: actionTriggeredEvent.Project,
+			Service: actionTriggeredEvent.Service,
+			Stage:   actionTriggeredEvent.Stage,
+			Labels:  actionTriggeredEvent.Labels,
+		},
 	}
 }
 
