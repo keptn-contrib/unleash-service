@@ -97,6 +97,7 @@ func (eh ActionTriggeredHandler) getActionFinishedEvent(result keptnv2.ResultTyp
 			Labels:  actionTriggeredEvent.Labels,
 			Status:  status,
 			Result:  result,
+			Message: message,
 		},
 		Action: keptnv2.ActionData{},
 	}
