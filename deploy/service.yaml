@@ -16,7 +16,7 @@ spec:
       serviceAccountName: keptn-default
       containers:
         - name: unleash-service
-          image: keptncontrib/unleash-service:0.3.0
+          image: keptncontrib/unleash-service:0.3.1
           ports:
             - containerPort: 8080
           env:
@@ -29,7 +29,7 @@ spec:
                 name: unleash
                 optional: true
         - name: distributor
-          image: keptn/distributor:0.8.0
+          image: keptn/distributor:0.8.2
           ports:
             - containerPort: 8080
           resources:
