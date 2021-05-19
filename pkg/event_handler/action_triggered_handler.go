@@ -45,22 +45,31 @@ func (eh ActionTriggeredHandler) HandleEvent() error {
 	values, ok := actionTriggeredEvent.Action.Value.(map[string]interface{})
 
 	if !ok {
-		eh.Logger.Error("Could not parse action.value")
+		msg := "Could not parse action.value"
+		eh.Logger.Error(msg)
 		err = eh.sendEvent(keptnv2.GetFinishedEventType(keptnv2.ActionTaskName),
-			eh.getActionFinishedEvent(keptnv2.ResultPass, keptnv2.StatusErrored, *actionTriggeredEvent))
-		return errors.New("Could not parse action.value")
+			eh.getActionFinishedEvent(keptnv2.ResultFailed, keptnv2.StatusErrored, *actionTriggeredEvent, msg))
+		return errors.New(msg)
 	}
 
 	for feature, value := range values {
 		if _, ok := value.(string); !ok {
-			eh.Logger.Error("Value property of feature toggle remediation action not valid. It must be set: TOGGLENAME:\"on\" or TOGGLENAME:\"off\"")
+			msg := "Value property of feature toggle remediation action not valid. It must be set: TOGGLENAME:\"on\" or TOGGLENAME:\"off\""
+			eh.Logger.Error(msg)
+			sendErr := eh.sendEvent(keptnv2.GetFinishedEventType(keptnv2.ActionTaskName),
+				eh.getActionFinishedEvent(keptnv2.ResultFailed, keptnv2.StatusErrored, *actionTriggeredEvent, msg))
+			if sendErr != nil {
+				eh.Logger.Error("could not send action-finished event: " + err.Error())
+				return err
+			}
 			return errors.New("Value property of feature toggle remediation action not valid. It must be set: TOGGLENAME:\"on\" or TOGGLENAME:\"off\"")
 		}
 		err = toggleFeature(feature, value.(string))
 		if err != nil {
-			eh.Logger.Error("Could not set feature " + feature + " to value " + value.(string) + ": " + err.Error())
+			msg := "Could not set feature " + feature + " to value " + value.(string) + ": " + err.Error()
+			eh.Logger.Error(msg)
 			sendErr := eh.sendEvent(keptnv2.GetFinishedEventType(keptnv2.ActionTaskName),
-				eh.getActionFinishedEvent(keptnv2.ResultPass, keptnv2.StatusErrored, *actionTriggeredEvent))
+				eh.getActionFinishedEvent(keptnv2.ResultFailed, keptnv2.StatusErrored, *actionTriggeredEvent, msg))
 			if sendErr != nil {
 				eh.Logger.Error("could not send action-finished event: " + err.Error())
 				return err
@@ -70,7 +79,7 @@ func (eh ActionTriggeredHandler) HandleEvent() error {
 	}
 
 	err = eh.sendEvent(keptnv2.GetFinishedEventType(keptnv2.ActionTaskName),
-		eh.getActionFinishedEvent(keptnv2.ResultPass, keptnv2.StatusSucceeded, *actionTriggeredEvent))
+		eh.getActionFinishedEvent(keptnv2.ResultPass, keptnv2.StatusSucceeded, *actionTriggeredEvent, ""))
 	if err != nil {
 		eh.Logger.Error("could not send action-finished event: " + err.Error())
 		return err
@@ -78,8 +87,7 @@ func (eh ActionTriggeredHandler) HandleEvent() error {
 	return nil
 }
 
-func (eh ActionTriggeredHandler) getActionFinishedEvent(result keptnv2.ResultType, status keptnv2.StatusType,
-	actionTriggeredEvent keptnv2.ActionTriggeredEventData) keptnv2.ActionFinishedEventData {
+func (eh ActionTriggeredHandler) getActionFinishedEvent(result keptnv2.ResultType, status keptnv2.StatusType, actionTriggeredEvent keptnv2.ActionTriggeredEventData, message string) keptnv2.ActionFinishedEventData {
 
 	return keptnv2.ActionFinishedEventData{
 		EventData: keptnv2.EventData{
