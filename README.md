@@ -54,15 +54,17 @@ Please always double check the version of Keptn you are using compared to the ve
 |       0.6.x      | keptncontrib/unleash-service:0.1.0  |
 |       0.7.x      | keptncontrib/unleash-service:0.2.0  |
 |       0.8.x      | keptncontrib/unleash-service:0.3.0  |
-|       0.8.x      | keptncontrib/unleash-service:0.3.1  |
+|    0.8.0-0.8.3   | keptncontrib/unleash-service:0.3.1  |
+|       0.8.4      | keptncontrib/unleash-service:0.3.2  |
+
 
 
 ## Installation
 
-To deploy the `unleash-service` in version 0.3.1, execute the following command:
+To deploy the `unleash-service` in version 0.3.2, execute the following command:
 
 ```
-kubectl apply -f https://github.com/keptn-contrib/unleash-service/tree/release-0.3.1/deploy/service.yaml -n keptn
+kubectl apply -f https://github.com/keptn-contrib/unleash-service/tree/release-0.3.2/deploy/service.yaml -n keptn
 ```
 
 ## Uninstall the unleash-service
@@ -70,6 +72,6 @@ kubectl apply -f https://github.com/keptn-contrib/unleash-service/tree/release-0
 To uninstall the service, execute:
 
 ```
-kubectl delete -f https://github.com/keptn-contrib/unleash-service/tree/release-0.3.1/deploy/service.yaml -n keptn
+kubectl delete -f https://github.com/keptn-contrib/unleash-service/tree/release-0.3.2/deploy/service.yaml -n keptn
 ```
 
