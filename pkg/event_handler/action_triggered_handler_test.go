@@ -2,11 +2,6 @@ package event_handler
 
 import (
 	"encoding/json"
-	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/go-openapi/strfmt"
-	keptnapi "github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/go-utils/pkg/lib/keptn"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -14,6 +9,11 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+	keptnapi "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/lib/keptn"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
 
 func Test_toggleFeature(t *testing.T) {
@@ -177,7 +177,7 @@ func TestActionTriggeredHandler_HandleEvent(t *testing.T) {
 					Shkeptncontext: "",
 					Source:         nil,
 					Specversion:    "",
-					Time:           strfmt.DateTime{},
+					Time:           time.Time{},
 					Type:           stringp(keptnv2.GetStartedEventType(keptnv2.ActionTaskName)),
 				},
 				{
@@ -201,7 +201,7 @@ func TestActionTriggeredHandler_HandleEvent(t *testing.T) {
 					Shkeptncontext: "",
 					Source:         nil,
 					Specversion:    "",
-					Time:           strfmt.DateTime{},
+					Time:           time.Time{},
 					Type:           stringp(keptnv2.GetFinishedEventType(keptnv2.ActionTaskName)),
 				}},
 			returnStatus: 200,
