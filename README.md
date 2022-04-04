@@ -55,8 +55,8 @@ Please always double check the version of Keptn you are using compared to the ve
 |       0.7.x      | keptncontrib/unleash-service:0.2.0  |
 |       0.8.x      | keptncontrib/unleash-service:0.3.0  |
 |    0.8.0-0.8.3   | keptncontrib/unleash-service:0.3.1  |
-|       0.8.4      | keptncontrib/unleash-service:0.3.2  |
-
+|       0.8.4 - 0.13.x  | keptncontrib/unleash-service:0.3.2  |
+|       0.14.x     | *keptncontrib/unleash-service:0.3.3-dev-PR-71*  |
 
 
 ## Installation
