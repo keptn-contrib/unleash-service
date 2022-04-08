@@ -49,7 +49,7 @@ Example payload for an action.triggered event:
 Please always double check the version of Keptn you are using compared to the version of this service, and follow the compatibility matrix below.
 
 
-| Keptn Version    | [Unleash Service Image](https://hub.docker.com/r/keptncontrib/unleash-service/tags) |
+| Keptn Version\*  | [Unleash Service Image](https://hub.docker.com/r/keptncontrib/unleash-service/tags) |
 |:----------------:|:----------------------------------------:|
 |       0.6.x      | keptncontrib/unleash-service:0.1.0  |
 |       0.7.x      | keptncontrib/unleash-service:0.2.0  |
@@ -57,7 +57,9 @@ Please always double check the version of Keptn you are using compared to the ve
 |    0.8.0-0.8.3   | keptncontrib/unleash-service:0.3.1  |
 |       0.8.4      | keptncontrib/unleash-service:0.3.2  |
 
+\* This is the Keptn version we aim to be compatible with. Other versions should work too, but there is no guarantee.
 
+**Note**: This integration is currently incompatible with Keptn 0.14.x and newer.
 
 ## Installation
 
