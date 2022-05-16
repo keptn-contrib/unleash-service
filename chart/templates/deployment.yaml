@@ -53,14 +53,14 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
         - name: distributor
           image: "{{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}"
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 8080
-          readinessProbe:
-            httpGet:
-              path: /ready
-              port: 8080
+#          livenessProbe:
+#            httpGet:
+#              path: /health
+#              port: 8080
+#          readinessProbe:
+#            httpGet:
+#              path: /ready
+#              port: 8080
           lifecycle:
             preStop:
               exec:
