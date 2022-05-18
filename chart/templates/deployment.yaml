@@ -75,6 +75,10 @@ spec:
             limits:
               memory: "128Mi"
               cpu: "500m"
+          envFrom:
+            - secretRef:
+                name: unleash
+                optional: true
           env:
             - name: PUBSUB_URL
               value: 'nats://keptn-nats'
