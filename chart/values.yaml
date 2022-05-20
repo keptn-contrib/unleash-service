@@ -1,5 +1,5 @@
 image:
-  repository: keptncontrib/unleash-service # Container Image Name
+  repository: ghcr.io/keptn-contrib/unleash-service # Container Image Name
   pullPolicy: IfNotPresent                   # Kubernetes Image Pull Policy
   tag: ""                                    # Container Tag
 service:
