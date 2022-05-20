@@ -56,11 +56,13 @@ Please always double check the version of Keptn you are using compared to the ve
 |      0.8.x      |                         keptncontrib/unleash-service:0.3.0                          |
 |   0.8.0-0.8.3   |                         keptncontrib/unleash-service:0.3.1                          |
 |      0.8.4      |                         keptncontrib/unleash-service:0.3.2                          |
-|     0.14.x      |                         keptncontrib/unleash-service:0.4.0                          |
+|    0.14.2\**    |                         keptncontrib/unleash-service:0.4.0                          |
 
 \* This is the Keptn version we aim to be compatible with. Other versions should work too, but there is no guarantee.
 
-**Note**: This integration is currently incompatible with Keptn 0.14.x and newer.
+\** This version is only compatible with Keptn 0.14.2 and potentially newer releases of Keptn 0.14.x due to a breaking change in NATS cluster name.
+
+You can find more information and older releases on the [Releases](https://github.com/keptn-contrib/unleash-service/releases) page.
 
 ## Installation
 
