@@ -43,7 +43,6 @@ ARG version
 ENV version $version
 
 ENV env=production
-ARG debugBuild
 
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /go/src/github.com/keptn-contrib/unleash-service/unleash-service /unleash-service
