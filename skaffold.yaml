@@ -4,7 +4,7 @@ build:
   local:
     useBuildkit: true
   artifacts:
-    - image: keptncontrib/unleash-service
+    - image: ghcr.io/keptn-contrib/unleash-service
       docker:
         dockerfile: Dockerfile
 deploy:
@@ -15,7 +15,7 @@ deploy:
       - name: unleash-service
         namespace: keptn
         artifactOverrides:
-          image: keptncontrib/unleash-service
+          image: ghcr.io/keptn-contrib/unleash-service
         imageStrategy:
           helm: { }
         overrides:
