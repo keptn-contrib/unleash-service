@@ -49,7 +49,10 @@ func (eh ActionTriggeredHandler) HandleEvent() error {
 		eh.Logger.Error(msg)
 		err = eh.sendEvent(keptnv2.GetFinishedEventType(keptnv2.ActionTaskName),
 			eh.getActionFinishedEvent(keptnv2.ResultFailed, keptnv2.StatusErrored, *actionTriggeredEvent, msg))
-		return errors.New(msg)
+		if err != nil {
+			return fmt.Errorf("%s: %w", msg, err)
+		}
+		return nil
 	}
 
 	for feature, value := range values {
@@ -62,7 +65,7 @@ func (eh ActionTriggeredHandler) HandleEvent() error {
 				eh.Logger.Error("could not send action-finished event: " + err.Error())
 				return err
 			}
-			return errors.New("Value property of feature toggle remediation action not valid. It must be set: TOGGLENAME:\"on\" or TOGGLENAME:\"off\"")
+			return nil
 		}
 		err = toggleFeature(feature, value.(string))
 		if err != nil {
@@ -74,7 +77,7 @@ func (eh ActionTriggeredHandler) HandleEvent() error {
 				eh.Logger.Error("could not send action-finished event: " + err.Error())
 				return err
 			}
-			return err
+			return nil
 		}
 	}
 
