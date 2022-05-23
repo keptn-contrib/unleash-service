@@ -1,15 +1,15 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "keptn-service.fullname" . }}
+  name: {{ include "unleash-service.fullname" . }}
   labels:
-    {{- include "keptn-service.labels" . | nindent 4 }}
+    {{- include "unleash-service.labels" . | nindent 4 }}
 
 spec:
   replicas: 1
   selector:
     matchLabels:
-      {{- include "keptn-service.selectorLabels" . | nindent 6 }}
+      {{- include "unleash-service.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -17,13 +17,13 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "keptn-service.labels" . | nindent 8 }}
+        {{- include "unleash-service.labels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "keptn-service.serviceAccountName" . }}
+      serviceAccountName: {{ include "unleash-service.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
