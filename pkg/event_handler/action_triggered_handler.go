@@ -28,7 +28,7 @@ func (eh ActionTriggeredHandler) HandleEvent() error {
 	err := eh.Event.DataAs(actionTriggeredEvent)
 	if err != nil {
 		eh.Logger.Error("feature toggle remediation action not well formed: " + err.Error())
-		return nil
+		return errors.New("feature toggle remediation action not well formed: " + err.Error())
 	}
 
 	if actionTriggeredEvent.Action.Action != ActionToggleFeature {
@@ -49,6 +49,7 @@ func (eh ActionTriggeredHandler) HandleEvent() error {
 		eh.Logger.Error(msg)
 		err = eh.sendEvent(keptnv2.GetFinishedEventType(keptnv2.ActionTaskName),
 			eh.getActionFinishedEvent(keptnv2.ResultFailed, keptnv2.StatusErrored, *actionTriggeredEvent, msg))
+		return nil
 	}
 
 	for feature, value := range values {
