@@ -49,6 +49,9 @@ func (eh ActionTriggeredHandler) HandleEvent() error {
 		eh.Logger.Error(msg)
 		err = eh.sendEvent(keptnv2.GetFinishedEventType(keptnv2.ActionTaskName),
 			eh.getActionFinishedEvent(keptnv2.ResultFailed, keptnv2.StatusErrored, *actionTriggeredEvent, msg))
+		if err != nil {
+			return fmt.Errorf("%s: %w", msg, err)
+		}
 		return nil
 	}
 
