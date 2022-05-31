@@ -3,11 +3,9 @@ package event_handler
 import (
 	"errors"
 	"fmt"
-	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/go-sdk/pkg/sdk"
 	"net/http"
-	"net/url"
 	"os"
 	"strconv"
 )
@@ -15,82 +13,60 @@ import (
 const ActionToggleFeature = "toggle-feature"
 
 type ActionTriggeredHandler struct {
-	Logger keptn.LoggerInterface
-	Event  cloudevents.Event
 }
 
-func (eh ActionTriggeredHandler) HandleEvent() error {
-	var shkeptncontext string
-	_ = eh.Event.Context.ExtensionAs("shkeptncontext", &shkeptncontext)
+func NewActionTriggeredHandler() *ActionTriggeredHandler {
+	return &ActionTriggeredHandler{}
+}
 
+func (g *ActionTriggeredHandler) Execute(k sdk.IKeptn, event sdk.KeptnEvent) (interface{}, *sdk.Error) {
 	actionTriggeredEvent := &keptnv2.ActionTriggeredEventData{}
 
-	err := eh.Event.DataAs(actionTriggeredEvent)
-	if err != nil {
-		eh.Logger.Error("feature toggle remediation action not well formed: " + err.Error())
-		return errors.New("feature toggle remediation action not well formed: " + err.Error())
+	if err := keptnv2.Decode(event.Data, actionTriggeredEvent); err != nil {
+		return nil, &sdk.Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed, Message: "feature toggle remediation action not well formed: " + err.Error()}
 	}
 
 	if actionTriggeredEvent.Action.Action != ActionToggleFeature {
-		eh.Logger.Info("Received unknown action: " + actionTriggeredEvent.Action.Action + ". Exiting")
-		return nil
+		k.Logger().Info("Received unknown action: " + actionTriggeredEvent.Action.Action + ". Exiting")
+		return nil, nil
 	}
 
 	// Send action.started event
-	if sendErr := eh.sendEvent(keptnv2.GetStartedEventType(keptnv2.ActionTaskName), eh.getActionStartedEvent(*actionTriggeredEvent)); sendErr != nil {
-		eh.Logger.Error(sendErr.Error())
-		return errors.New(sendErr.Error())
+	if err := k.SendStartedEvent(event); err != nil {
+		k.Logger().Error("could not send .started event")
+		return nil, &sdk.Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed, Message: "could not send .started event"}
 	}
 
 	values, ok := actionTriggeredEvent.Action.Value.(map[string]interface{})
 
 	if !ok {
-		msg := "Could not parse action.value"
-		eh.Logger.Error(msg)
-		err = eh.sendEvent(keptnv2.GetFinishedEventType(keptnv2.ActionTaskName),
-			eh.getActionFinishedEvent(keptnv2.ResultFailed, keptnv2.StatusErrored, *actionTriggeredEvent, msg))
-		if err != nil {
-			return fmt.Errorf("%s: %w", msg, err)
-		}
-		return nil
+		msg := "could not parse action.value"
+		k.Logger().Error(msg)
+
+		return nil, &sdk.Error{Err: errors.New(msg), StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed, Message: msg}
 	}
 
 	for feature, value := range values {
 		if _, ok := value.(string); !ok {
-			msg := "Value property of feature toggle remediation action not valid. It must be set: TOGGLENAME:\"on\" or TOGGLENAME:\"off\""
-			eh.Logger.Error(msg)
-			sendErr := eh.sendEvent(keptnv2.GetFinishedEventType(keptnv2.ActionTaskName),
-				eh.getActionFinishedEvent(keptnv2.ResultFailed, keptnv2.StatusErrored, *actionTriggeredEvent, msg))
-			if sendErr != nil {
-				eh.Logger.Error("could not send action-finished event: " + err.Error())
-				return err
-			}
-			return nil
+			msg := "value property of feature toggle remediation action not valid. It must be set: TOGGLENAME:\"on\" or TOGGLENAME:\"off\""
+			k.Logger().Error(msg)
+
+			return nil, &sdk.Error{Err: errors.New(msg), StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed, Message: msg}
 		}
-		err = toggleFeature(feature, value.(string))
+		err := toggleFeature(feature, value.(string))
 		if err != nil {
 			msg := "Could not set feature " + feature + " to value " + value.(string) + ": " + err.Error()
-			eh.Logger.Error(msg)
-			sendErr := eh.sendEvent(keptnv2.GetFinishedEventType(keptnv2.ActionTaskName),
-				eh.getActionFinishedEvent(keptnv2.ResultFailed, keptnv2.StatusErrored, *actionTriggeredEvent, msg))
-			if sendErr != nil {
-				eh.Logger.Error("could not send action-finished event: " + err.Error())
-				return err
-			}
-			return nil
+			k.Logger().Error(msg)
+			return nil, &sdk.Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed, Message: msg}
 		}
 	}
 
-	err = eh.sendEvent(keptnv2.GetFinishedEventType(keptnv2.ActionTaskName),
-		eh.getActionFinishedEvent(keptnv2.ResultPass, keptnv2.StatusSucceeded, *actionTriggeredEvent, ""))
-	if err != nil {
-		eh.Logger.Error("could not send action-finished event: " + err.Error())
-		return err
-	}
-	return nil
+	finishedEventData := g.getActionFinishedEvent(keptnv2.ResultPass, keptnv2.StatusSucceeded, *actionTriggeredEvent, "")
+
+	return finishedEventData, nil
 }
 
-func (eh ActionTriggeredHandler) getActionFinishedEvent(result keptnv2.ResultType, status keptnv2.StatusType, actionTriggeredEvent keptnv2.ActionTriggeredEventData, message string) keptnv2.ActionFinishedEventData {
+func (g *ActionTriggeredHandler) getActionFinishedEvent(result keptnv2.ResultType, status keptnv2.StatusType, actionTriggeredEvent keptnv2.ActionTriggeredEventData, message string) keptnv2.ActionFinishedEventData {
 
 	return keptnv2.ActionFinishedEventData{
 		EventData: keptnv2.EventData{
@@ -102,7 +78,6 @@ func (eh ActionTriggeredHandler) getActionFinishedEvent(result keptnv2.ResultTyp
 			Result:  result,
 			Message: message,
 		},
-		Action: keptnv2.ActionData{},
 	}
 }
 
@@ -116,33 +91,6 @@ func (eh ActionTriggeredHandler) getActionStartedEvent(actionTriggeredEvent kept
 			Labels:  actionTriggeredEvent.Labels,
 		},
 	}
-}
-
-func (eh ActionTriggeredHandler) sendEvent(eventType string, data interface{}) error {
-	keptnHandler, err := keptnv2.NewKeptn(&eh.Event, keptn.KeptnOpts{
-		EventBrokerURL: os.Getenv("EVENTBROKER"),
-	})
-	if err != nil {
-		eh.Logger.Error("Could not initialize Keptn handler: " + err.Error())
-		return err
-	}
-
-	source, _ := url.Parse("unleash-service")
-
-	event := cloudevents.NewEvent()
-	event.SetType(eventType)
-	event.SetSource(source.String())
-	event.SetDataContentType(cloudevents.ApplicationJSON)
-	event.SetExtension("shkeptncontext", keptnHandler.KeptnContext)
-	event.SetExtension("triggeredid", eh.Event.ID())
-	event.SetData(cloudevents.ApplicationJSON, data)
-
-	err = keptnHandler.SendCloudEvent(event)
-	if err != nil {
-		eh.Logger.Error("Could not send " + eventType + " event: " + err.Error())
-		return err
-	}
-	return nil
 }
 
 // ToggleFeature sets a value for a feature flag
