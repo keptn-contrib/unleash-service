@@ -9,7 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-const getActionTriggeredEventType = "sh.keptn.event.get-action.triggered"
+const getActionTriggeredEventType = "sh.keptn.event.action.triggered"
 const serviceName = "unleash-service"
 const envVarLogLevel = "LOG_LEVEL"
 

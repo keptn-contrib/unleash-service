@@ -48,7 +48,7 @@ spec:
           - name: env
             value: 'production'
           - name: EVENTBROKER
-            value: 'http://localhost:8081/event'
+            value: 'nats://keptn-nats'
           envFrom:
             - secretRef:
                 name: unleash

@@ -31,12 +31,6 @@ func (g *ActionTriggeredHandler) Execute(k sdk.IKeptn, event sdk.KeptnEvent) (in
 		return nil, nil
 	}
 
-	// Send action.started event
-	if err := k.SendStartedEvent(event); err != nil {
-		k.Logger().Error("could not send .started event")
-		return nil, &sdk.Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed, Message: "could not send .started event"}
-	}
-
 	values, ok := actionTriggeredEvent.Action.Value.(map[string]interface{})
 
 	if !ok {
