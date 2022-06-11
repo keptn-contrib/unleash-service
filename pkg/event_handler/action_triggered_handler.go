@@ -15,10 +15,12 @@ const ActionToggleFeature = "toggle-feature"
 type ActionTriggeredHandler struct {
 }
 
+// NewActionTriggeredHandler creates a new ActionTriggeredHandler
 func NewActionTriggeredHandler() *ActionTriggeredHandler {
 	return &ActionTriggeredHandler{}
 }
 
+// Execute handles the incoming cloud events
 func (g *ActionTriggeredHandler) Execute(k sdk.IKeptn, event sdk.KeptnEvent) (interface{}, *sdk.Error) {
 	actionTriggeredEvent := &keptnv2.ActionTriggeredEventData{}
 
