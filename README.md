@@ -88,6 +88,12 @@ kubectl -n keptn get deployment unleash-service -o wide
 kubectl -n keptn get pods -l run=unleash-service
 ```
 
+### Disable ServiceAccount creation
+
+The service account creation is enabled by default in the `values.yaml` file inside the Helm chart. If you do not want to create the default service account for any reason (like to create it manually, etc.), you can set the service account `create` variable to false.
+
+Note: Creating no service account or a custom one can lead to unwanted behavior.
+
 ### Up- or Downgrading
 
 Adapt and use the following command in case you want to up- or downgrade your installed version (specified by the `$VERSION` placeholder):
