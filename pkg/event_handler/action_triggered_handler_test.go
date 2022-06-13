@@ -124,7 +124,6 @@ func Test_Receiving_GetActionTriggeredEvent(t *testing.T) {
 	os.Setenv("UNLEASH_SERVER_URL", ts.URL)
 	os.Setenv("UNLEASH_USER", "keptn")
 	os.Setenv("UNLEASH_TOKEN", "keptn")
-	os.Setenv("EVENTBROKER", ts.URL)
 
 	fakeKeptn := sdk.NewFakeKeptn("test-unleash-svc")
 	fakeKeptn.AddTaskHandler("sh.keptn.event.action.triggered", NewActionTriggeredHandler())
