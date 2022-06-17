@@ -1,4 +1,6 @@
 # Unleash Service
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/keptn-contrib/unleash-service)
+[![Go Report Card](https://goreportcard.com/badge/github.com/keptn-contrib/unleash-service)](https://goreportcard.com/report/github.com/keptn-contrib/unleash-service)
 
 This service allows to interact with the open source feature toggle system [unleash](https://github.com/unleash). 
 Triggered by a Keptn CloudEvent of the type `sh.keptn.event.action.triggered`. After the features specified in the event 
@@ -49,18 +51,12 @@ Example payload for an action.triggered event:
 Please always double check the version of Keptn you are using compared to the version of this service, and follow the compatibility matrix below.
 
 
-| Keptn Version\* | Unleash Service Version |
-|:---------------:|:-----------------------:|
-|      0.6.x      |          0.1.0          |
-|      0.7.x      |          0.2.0          |
-|      0.8.x      |          0.3.0          |
-|   0.8.0-0.8.3   |          0.3.1          |
-|      0.8.4      |          0.3.2          |
-|    0.14.2\**    |      0.4.0-next.0       |
+|   Keptn Version\*    | Unleash Service Version |
+|:--------------------:|:-----------------------:|
+| 0.8.4 (up to 0.13.x) |          0.3.2          |
+|        0.14.2        |          0.4.0          |
 
-\* This is the Keptn version we aim to be compatible with. Other versions should work too, but there is no guarantee.
-
-\** This version is only compatible with Keptn 0.14.2 and potentially newer releases of Keptn 0.14.x due to a breaking change in NATS cluster name.
+\* This is the Keptn version we aim to be compatible with. Other versions (especially newer ones) should work too, but there is no guarantee.
 
 You can find more information and older releases on the [Releases](https://github.com/keptn-contrib/unleash-service/releases) page.
 
@@ -73,7 +69,7 @@ The *unleash-service* can be installed as a part of [Keptn's uniform](https://ke
 You can deploy the current version of the *unleash-service* in your Kubernetes cluster into the same namespace as your Keptn control-plane (e.g., `keptn`):
 
 ```console
-helm -n keptn install unleash-service https://github.com/keptn-contrib/unleash-service/releases/download/0.4.0-next.0/unleash-service-0.4.0-next.0.tgz
+helm -n keptn install unleash-service https://github.com/keptn-contrib/unleash-service/releases/download/0.4.0/unleash-service-0.4.0.tgz
 ```
 
 If you're installing versions of 0.3.2 and older, please use
@@ -85,7 +81,7 @@ This should install the `unleash-service` together with a Keptn `distributor` in
 
 ```console
 kubectl -n keptn get deployment unleash-service -o wide
-kubectl -n keptn get pods -l run=unleash-service
+kubectl -n keptn get pods -l app.kubernetes.io/instance=unleash-service
 ```
 
 ### Disable ServiceAccount creation
@@ -115,6 +111,21 @@ If you're removing versions of 0.3.2 and older, please use
 kubectl -n keptn delete -f https://raw.githubusercontent.com/keptn-contrib/unleash-service/release-0.3.2/deploy/service.yaml 
 ```
 
+## Configuration
+
+`unleash-service` by default reads the Kubernetes secret `unleash`, which should contain credentials and URL for your unleash server, e.g.:
+```console
+kubectl -n keptn create secret generic unleash \
+  --from-literal="UNLEASH_SERVER_URL=http://your-unleash-server.dev/api" \
+  --from-literal="UNLEASH_USER=<UNLEASH-USERNAME>" \
+  --from-literal="UNLEASH_TOKEN=<UNLEASH-PASSWORD>"
+```
+
+After changing this value, you might need to restart `unleash-service`, e.g.,
+```console
+kubectl -n keptn delete pods -l app.kubernetes.io/instance=unleash-service
+```
+
 ## Development
 
 Development can be conducted using any GoLang compatible IDE/editor (e.g., Jetbrains GoLand, VSCode with Go plugins).
@@ -124,5 +135,19 @@ It is recommended to make use of branches as follows:
 * `main`/`master` contains the latest potentially unstable version
 * create a new branch for any changes that you are working on, e.g., `feature/my-cool-stuff` or `bug/overflow`
 * once ready, create a pull request from that branch back to the `main`/`master` branch
+* use [semantic commits and Pull Request titles](https://www.conventionalcommits.org/en/v1.0.0/)
 
 When writing code, it is recommended to follow the coding style suggested by the [Golang community](https://github.com/golang/go/wiki/CodeReviewComments).
+
+### How to release a new version of this service
+
+It is assumed that the current development takes place in the `main` branch (either via Pull Requests or directly).
+
+Creating a release is as simple as using the
+[Create pre-release](https://github.com/keptn-contrib/unleash-service/actions/workflows/pre-release.yml) and
+[Create release](https://github.com/keptn-contrib/unleash-service/actions/workflows/release.yml) workflows.
+
+**Note**: Creating a pre-release will actually create a GitHub pre-release and tag the latest commit on the specified branch.
+When creating a release, only a draft release as well as a pull request are created. You still need to publish the draft
+release and merge the Pull Request.
+
