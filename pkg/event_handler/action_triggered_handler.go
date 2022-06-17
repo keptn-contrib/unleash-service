@@ -25,11 +25,11 @@ func (g *ActionTriggeredHandler) Execute(k sdk.IKeptn, event sdk.KeptnEvent) (in
 	actionTriggeredEvent := &keptnv2.ActionTriggeredEventData{}
 
 	if err := keptnv2.Decode(event.Data, actionTriggeredEvent); err != nil {
-		return nil, &sdk.Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed, Message: "feature toggle remediation action not well formed: " + err.Error()}
+		return nil, &sdk.Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed, Message: "failed to decode action.triggered event: " + err.Error()}
 	}
 
 	if actionTriggeredEvent.Action.Action != ActionToggleFeature {
-		k.Logger().Info("Received unknown action: " + actionTriggeredEvent.Action.Action + ". Exiting")
+		k.Logger().Infof("Received action %s does not match supported action %s. Skipping this action.", actionTriggeredEvent.Action.Action, ActionToggleFeature)
 		return nil, nil
 	}
 
