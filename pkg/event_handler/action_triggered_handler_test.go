@@ -2,18 +2,18 @@ package event_handler
 
 import (
 	"encoding/json"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+	keptnapi "github.com/keptn/go-utils/pkg/api/models"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/keptn/go-sdk/pkg/sdk"
+	"github.com/stretchr/testify/require"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"strings"
 	"testing"
-	"time"
-
-	cloudevents "github.com/cloudevents/sdk-go/v2"
-	keptnapi "github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/go-utils/pkg/lib/keptn"
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 )
 
 func Test_toggleFeature(t *testing.T) {
@@ -84,11 +84,21 @@ func Test_toggleFeature(t *testing.T) {
 	}
 }
 
-func TestActionTriggeredHandler_HandleEvent(t *testing.T) {
+func newActionTriggeredEvent(filename string) cloudevents.Event {
+	content, err := ioutil.ReadFile(filename)
+	if err != nil {
+		log.Fatal(err)
+	}
+	event := keptnapi.KeptnContextExtendedCE{}
+	err = json.Unmarshal(content, &event)
+	_ = err
+	return keptnv2.ToCloudEvent(event)
+}
 
+func Test_Receiving_GetActionTriggeredEvent(t *testing.T) {
 	ch := make(chan *keptnapi.KeptnContextExtendedCE)
 
-	var returnedStatusCode int
+	var returnedStatusCode = 200
 	ts := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Content-Type", "application/json")
@@ -114,139 +124,22 @@ func TestActionTriggeredHandler_HandleEvent(t *testing.T) {
 	os.Setenv("UNLEASH_SERVER_URL", ts.URL)
 	os.Setenv("UNLEASH_USER", "keptn")
 	os.Setenv("UNLEASH_TOKEN", "keptn")
-	os.Setenv("EVENTBROKER", ts.URL)
 
-	type fields struct {
-		Logger keptn.LoggerInterface
-		Event  cloudevents.Event
-	}
-	tests := []struct {
-		name         string
-		fields       fields
-		wantErr      bool
-		wantEvent    []*keptnapi.KeptnContextExtendedCE
-		returnStatus int
-	}{
-		{
-			name: "Succeed",
-			fields: fields{
-				Logger: keptn.NewLogger("", "", ""),
-				Event: getTestCloudEvent("sh.keptn.events.tests-finished", `{
-    "action": {
-      "name": "FeatureToggle",
-      "action": "toggle-feature",
-      "description": "toggle a feature",
-      "value": {
-        "EnableItemCache": "on"
-      }
-    },
-    "problem": {
-      "ImpactedEntity": "carts-primary",
-      "PID": "93a5-3fas-a09d-8ckf",
-      "ProblemDetails": "Pod name",
-      "ProblemID": "762",
-      "ProblemTitle": "cpu_usage_sockshop_carts",
-      "State": "OPEN"
-    },
-    "project": "sockshop",
-    "stage": "staging",
-    "service": "carts",
-    "labels": {
-      "testid": "12345",
-      "buildnr": "build17",
-      "runby": "JohnDoe"
-    }
-  }`),
-			},
-			wantErr: false,
-			wantEvent: []*keptnapi.KeptnContextExtendedCE{
-				{
-					Contenttype: "application/json",
-					Data: []byte(`{    
-    "project": "sockshop",
-    "stage": "staging",
-    "service": "carts",
-    "labels": {
-      "testid": "12345",
-      "buildnr": "build17",
-      "runby": "JohnDoe"
-    }
-  }`),
-					Extensions:     nil,
-					ID:             "",
-					Shkeptncontext: "",
-					Source:         nil,
-					Specversion:    "",
-					Time:           time.Time{},
-					Type:           stringp(keptnv2.GetStartedEventType(keptnv2.ActionTaskName)),
-				},
-				{
-					Contenttype: "application/json",
-					Data: []byte(`{
-    "action": {
-      "result": "pass",
-      "status": "succeeded",
-    },
-    "project": "sockshop",
-    "stage": "staging",
-    "service": "carts",
-    "labels": {
-      "testid": "12345",
-      "buildnr": "build17",
-      "runby": "JohnDoe"
-    }
-  }`),
-					Extensions:     nil,
-					ID:             "",
-					Shkeptncontext: "",
-					Source:         nil,
-					Specversion:    "",
-					Time:           time.Time{},
-					Type:           stringp(keptnv2.GetFinishedEventType(keptnv2.ActionTaskName)),
-				}},
-			returnStatus: 200,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			returnedStatusCode = tt.returnStatus
-			eh := ActionTriggeredHandler{
-				Logger: tt.fields.Logger,
-				Event:  tt.fields.Event,
-			}
-			if err := eh.HandleEvent(); (err != nil) != tt.wantErr {
-				t.Errorf("HandleEvent() error = %v, wantErr %v", err, tt.wantErr)
-			}
+	fakeKeptn := sdk.NewFakeKeptn("test-unleash-svc")
+	fakeKeptn.AddTaskHandler("sh.keptn.event.action.triggered", NewActionTriggeredHandler())
+	fakeKeptn.Start()
 
-			for i := 0; i < len(tt.wantEvent); i++ {
-				select {
-				case msg := <-ch:
-					t.Logf("Received event on event broker: %v", msg)
+	fakeKeptn.NewEvent(newActionTriggeredEvent("test/events/action_triggered.json"))
 
-					if *msg.Type != *tt.wantEvent[i].Type {
-						t.Errorf("HandleEvent() sent event type = %v, wantEventType %v", *msg.Type, *tt.wantEvent[i].Type)
-					}
-				case <-time.After(5 * time.Second):
-					t.Errorf("Message did not make it to the receiver")
-				}
-			}
-		})
-	}
-}
+	require.Equal(t, 2, len(fakeKeptn.GetEventSender().SentEvents))
 
-func getTestCloudEvent(eventType, data string) cloudevents.Event {
-	event := cloudevents.NewEvent()
+	require.Equal(t, keptnv2.GetStartedEventType("action"), fakeKeptn.GetEventSender().SentEvents[0].Type())
+	require.Equal(t, keptnv2.GetFinishedEventType("action"), fakeKeptn.GetEventSender().SentEvents[1].Type())
 
-	var dataItf interface{}
-
-	_ = json.Unmarshal([]byte(data), &dataItf)
-
-	event.SetType(eventType)
-	event.SetDataContentType(cloudevents.ApplicationJSON)
-	event.SetData(cloudevents.ApplicationJSON, dataItf)
-	return event
-}
-
-func stringp(s string) *string {
-	return &s
+	finishedEvent, _ := keptnv2.ToKeptnEvent(fakeKeptn.GetEventSender().SentEvents[1])
+	actionFinishedData := keptnv2.ActionFinishedEventData{}
+	finishedEvent.DataAs(&actionFinishedData)
+	log.Println("-----------------------------------------------------------")
+	require.Equal(t, keptnv2.StatusSucceeded, actionFinishedData.Status)
+	require.Equal(t, keptnv2.ResultPass, actionFinishedData.Result)
 }

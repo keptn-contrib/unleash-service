@@ -47,8 +47,6 @@ spec:
             value: "http://localhost:8081/configuration-service"
           - name: env
             value: 'production'
-          - name: EVENTBROKER
-            value: 'http://localhost:8081/event'
           envFrom:
             - secretRef:
                 name: unleash
@@ -83,7 +81,7 @@ spec:
             - name: PUBSUB_URL
               value: 'nats://keptn-nats'
             - name: PUBSUB_TOPIC
-              value: {{ .Values.distributor.pubsubTopic }}
+              value: 'sh.keptn.event.action.triggered'
             - name: PUBSUB_RECIPIENT
               value: '127.0.0.1'
             - name: STAGE_FILTER
