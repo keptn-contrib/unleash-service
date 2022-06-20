@@ -139,6 +139,8 @@ It is recommended to make use of branches as follows:
 
 When writing code, it is recommended to follow the coding style suggested by the [Golang community](https://github.com/golang/go/wiki/CodeReviewComments).
 
+To manually verify your changes, please follow the guide in the [example/ folder](example).
+
 ### How to release a new version of this service
 
 It is assumed that the current development takes place in the `main` branch (either via Pull Requests or directly).
