@@ -55,6 +55,7 @@ Please always double check the version of Keptn you are using compared to the ve
 |:--------------------:|:-----------------------:|
 | 0.8.4 (up to 0.13.x) |          0.3.2          |
 |        0.14.2        |          0.4.0          |
+|    0.14.2 - 0.16.0   |          0.4.1          |
 
 \* This is the Keptn version we aim to be compatible with. Other versions (especially newer ones) should work too, but there is no guarantee.
 
