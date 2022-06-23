@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.1](https://github.com/keptn-contrib/unleash-service/compare/0.4.0...0.4.1) (2022-06-23)
+
+
+### Features
+
+* Reimplement unleash to use keptn/go-sdk ([#83](https://github.com/keptn-contrib/unleash-service/issues/83)) ([636d0b0](https://github.com/keptn-contrib/unleash-service/commit/636d0b013aa81f43d190b75063fadabefb667bb1))
+
+
+### Docs
+
+* Added example for manual testing ([#81](https://github.com/keptn-contrib/unleash-service/issues/81)) ([882fa6f](https://github.com/keptn-contrib/unleash-service/commit/882fa6f4990c37fcec08272774f8d8af51d166c3))
+* state compatibility with Keptn 0.16 ([#86](https://github.com/keptn-contrib/unleash-service/issues/86)) ([7e9e037](https://github.com/keptn-contrib/unleash-service/commit/7e9e037cba6e6b05539cccd8f6ff622ddb3cddb4))
+* Update compatibility matrix in README ([#85](https://github.com/keptn-contrib/unleash-service/issues/85)) ([9106e51](https://github.com/keptn-contrib/unleash-service/commit/9106e51d9fc8d072037733e6175040449a0919f6))
+
 ## [0.4.0](https://github.com/keptn-contrib/unleash-service/compare/0.3.2...0.4.0) (2022-06-17)
 
 
