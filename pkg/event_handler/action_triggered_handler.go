@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/go-sdk/pkg/sdk"
+	"github.com/keptn/go-utils/pkg/sdk"
 	"net/http"
 	"os"
 	"strconv"
@@ -21,7 +21,7 @@ func NewActionTriggeredHandler() *ActionTriggeredHandler {
 }
 
 // Execute handles the incoming cloud events
-func (g *ActionTriggeredHandler) Execute(k sdk.IKeptn, event sdk.KeptnEvent) (interface{}, *sdk.Error) {
+func (eh *ActionTriggeredHandler) Execute(k sdk.IKeptn, event sdk.KeptnEvent) (interface{}, *sdk.Error) {
 	actionTriggeredEvent := &keptnv2.ActionTriggeredEventData{}
 
 	if err := keptnv2.Decode(event.Data, actionTriggeredEvent); err != nil {
@@ -57,12 +57,12 @@ func (g *ActionTriggeredHandler) Execute(k sdk.IKeptn, event sdk.KeptnEvent) (in
 		}
 	}
 
-	finishedEventData := g.getActionFinishedEvent(keptnv2.ResultPass, keptnv2.StatusSucceeded, *actionTriggeredEvent, "")
+	finishedEventData := eh.getActionFinishedEvent(keptnv2.ResultPass, keptnv2.StatusSucceeded, *actionTriggeredEvent, "")
 
 	return finishedEventData, nil
 }
 
-func (g *ActionTriggeredHandler) getActionFinishedEvent(result keptnv2.ResultType, status keptnv2.StatusType, actionTriggeredEvent keptnv2.ActionTriggeredEventData, message string) keptnv2.ActionFinishedEventData {
+func (eh *ActionTriggeredHandler) getActionFinishedEvent(result keptnv2.ResultType, status keptnv2.StatusType, actionTriggeredEvent keptnv2.ActionTriggeredEventData, message string) keptnv2.ActionFinishedEventData {
 
 	return keptnv2.ActionFinishedEventData{
 		EventData: keptnv2.EventData{
