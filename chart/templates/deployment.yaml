@@ -52,8 +52,6 @@ spec:
             value: "{{ .Values.remoteControlPlane.api.protocol }}://{{ .Values.remoteControlPlane.api.hostname }}/api"
           - name: KEPTN_API_TOKEN
             value: "{{ .Values.remoteControlPlane.api.token }}"
-          - name: EVENTBROKER
-            value: "{{ .Values.remoteControlPlane.api.eventbroker }}"
           {{- end }}
           envFrom:
             - secretRef:
