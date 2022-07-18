@@ -3,13 +3,13 @@ module github.com/keptn-contrib/unleash-service
 go 1.17
 
 require (
-	github.com/benbjohnson/clock v1.3.0
-	github.com/keptn/go-utils v0.17.0
+	github.com/keptn/go-utils v0.17.1-0.20220718120931-866624f8ce42
 	github.com/sirupsen/logrus v1.8.1
 )
 
 require (
 	github.com/avast/retry-go v3.0.0+incompatible // indirect
+	github.com/benbjohnson/clock v1.3.0 // indirect
 	github.com/cloudevents/sdk-go/observability/opentelemetry/v2 v2.0.0-20211001212819-74757a691209 // indirect
 	github.com/cloudevents/sdk-go/v2 v2.10.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -37,7 +37,7 @@ require (
 	golang.org/x/crypto v0.0.0-20220315160706-3147a52a75dd // indirect
 	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
 	golang.org/x/oauth2 v0.0.0-20220622183110-fd043fe589d2 // indirect
-	golang.org/x/sys v0.0.0-20220209214540-3681064d5158 // indirect
+	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
