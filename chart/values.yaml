@@ -8,10 +8,11 @@ service:
 remoteControlPlane:
   enabled: false                             # Enables remote execution plane mode
   api:
-    protocol: "http"                        # Used Protocol (http, https)
-    hostname: ""                            # Hostname of the control plane cluster (and Port)
+    protocol: "http"                         # Used Protocol (http, https)
+    hostname: "api-gateway-nginx.keptn"      # Hostname of the control plane cluster (and Port)
     apiValidateTls: true                     # Defines if the control plane certificate should be validated
     token: ""                                # Keptn API Token
+    eventbroker: "keptn-nats.keptn.svc.cluster.local" # URL to NATS broker
 
 imagePullSecrets: []                         # Secrets to use for container registry credentials
 

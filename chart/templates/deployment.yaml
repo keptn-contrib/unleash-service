@@ -47,6 +47,14 @@ spec:
             value: "http://localhost:8081/configuration-service"
           - name: env
             value: 'production'
+          {{- if .Values.remoteControlPlane.enabled }}
+          - name: KEPTN_API_ENDPOINT
+            value: "{{ .Values.remoteControlPlane.api.protocol }}://{{ .Values.remoteControlPlane.api.hostname }}/api"
+          - name: KEPTN_API_TOKEN
+            value: "{{ .Values.remoteControlPlane.api.token }}"
+          - name: EVENTBROKER
+            value: "{{ .Values.remoteControlPlane.api.eventbroker }}"
+          {{- end }}
           envFrom:
             - secretRef:
                 name: unleash
