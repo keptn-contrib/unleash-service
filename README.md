@@ -78,7 +78,7 @@ If you're installing versions of 0.3.2 and older, please use
 kubectl -n keptn apply -f https://raw.githubusercontent.com/keptn-contrib/unleash-service/release-0.3.2/deploy/service.yaml 
 ```
 
-This should install the `unleash-service` together with a Keptn `distributor` into the `keptn` namespace, which you can verify using
+This should install the `unleash-service` into the `keptn` namespace, which you can verify using
 
 ```console
 kubectl -n keptn get deployment unleash-service -o wide

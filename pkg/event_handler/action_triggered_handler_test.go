@@ -2,11 +2,9 @@ package event_handler
 
 import (
 	"encoding/json"
-	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnapi "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/go-sdk/pkg/sdk"
-	"github.com/stretchr/testify/require"
+	"github.com/keptn/go-utils/pkg/sdk"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -84,7 +82,7 @@ func Test_toggleFeature(t *testing.T) {
 	}
 }
 
-func newActionTriggeredEvent(filename string) cloudevents.Event {
+func newActionTriggeredEvent(filename string) keptnapi.KeptnContextExtendedCE {
 	content, err := ioutil.ReadFile(filename)
 	if err != nil {
 		log.Fatal(err)
@@ -92,7 +90,7 @@ func newActionTriggeredEvent(filename string) cloudevents.Event {
 	event := keptnapi.KeptnContextExtendedCE{}
 	err = json.Unmarshal(content, &event)
 	_ = err
-	return keptnv2.ToCloudEvent(event)
+	return event
 }
 
 func Test_Receiving_GetActionTriggeredEvent(t *testing.T) {
@@ -127,19 +125,14 @@ func Test_Receiving_GetActionTriggeredEvent(t *testing.T) {
 
 	fakeKeptn := sdk.NewFakeKeptn("test-unleash-svc")
 	fakeKeptn.AddTaskHandler("sh.keptn.event.action.triggered", NewActionTriggeredHandler())
-	fakeKeptn.Start()
 
 	fakeKeptn.NewEvent(newActionTriggeredEvent("test/events/action_triggered.json"))
 
-	require.Equal(t, 2, len(fakeKeptn.GetEventSender().SentEvents))
+	fakeKeptn.AssertNumberOfEventSent(t, 2)
 
-	require.Equal(t, keptnv2.GetStartedEventType("action"), fakeKeptn.GetEventSender().SentEvents[0].Type())
-	require.Equal(t, keptnv2.GetFinishedEventType("action"), fakeKeptn.GetEventSender().SentEvents[1].Type())
+	fakeKeptn.AssertSentEventType(t, 0, keptnv2.GetStartedEventType("action"))
+	fakeKeptn.AssertSentEventType(t, 1, keptnv2.GetFinishedEventType("action"))
 
-	finishedEvent, _ := keptnv2.ToKeptnEvent(fakeKeptn.GetEventSender().SentEvents[1])
-	actionFinishedData := keptnv2.ActionFinishedEventData{}
-	finishedEvent.DataAs(&actionFinishedData)
-	log.Println("-----------------------------------------------------------")
-	require.Equal(t, keptnv2.StatusSucceeded, actionFinishedData.Status)
-	require.Equal(t, keptnv2.ResultPass, actionFinishedData.Result)
+	fakeKeptn.AssertSentEventStatus(t, 1, keptnv2.StatusSucceeded)
+	fakeKeptn.AssertSentEventResult(t, 1, keptnv2.ResultPass)
 }

@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/keptn-contrib/unleash-service/pkg/event_handler"
-	"github.com/keptn/keptn/go-sdk/pkg/sdk"
+	"github.com/keptn/go-utils/pkg/sdk"
 	"github.com/sirupsen/logrus"
 )
 
