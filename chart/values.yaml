@@ -4,6 +4,8 @@ image:
   tag: ""                                    # Container Tag
 service:
   enabled: true                              # Creates a Kubernetes Service for the unleash-service
+
+subscription:
   pubsubTopic: "sh.keptn.event.action.triggered" # Sets the events the service subscribes to
 
 remoteControlPlane:
