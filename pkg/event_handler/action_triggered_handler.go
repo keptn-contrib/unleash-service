@@ -28,11 +28,6 @@ func (eh *ActionTriggeredHandler) Execute(k sdk.IKeptn, event sdk.KeptnEvent) (i
 		return nil, &sdk.Error{Err: err, StatusType: keptnv2.StatusErrored, ResultType: keptnv2.ResultFailed, Message: "failed to decode action.triggered event: " + err.Error()}
 	}
 
-	if actionTriggeredEvent.Action.Action != ActionToggleFeature {
-		k.Logger().Infof("Received action %s does not match supported action %s. Skipping this action.", actionTriggeredEvent.Action.Action, ActionToggleFeature)
-		return nil, nil
-	}
-
 	values, ok := actionTriggeredEvent.Action.Value.(map[string]interface{})
 
 	if !ok {

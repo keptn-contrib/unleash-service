@@ -1,6 +1,7 @@
 package main
 
 import (
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"log"
 	"os"
 
@@ -28,7 +29,18 @@ func main() {
 		serviceName,
 		sdk.WithTaskHandler(
 			getActionTriggeredEventType,
-			event_handler.NewActionTriggeredHandler()),
+			event_handler.NewActionTriggeredHandler(),
+			actionTriggeredFilter),
 		sdk.WithLogger(logrus.New()),
 	).Start())
+}
+
+func actionTriggeredFilter(keptnHandle sdk.IKeptn, event sdk.KeptnEvent) bool {
+	data := &keptnv2.ActionTriggeredEventData{}
+	if err := keptnv2.Decode(event.Data, data); err != nil {
+		keptnHandle.Logger().Errorf("Could not parse test.triggered event: %s", err.Error())
+		return false
+	}
+
+	return data.Action.Action == event_handler.ActionToggleFeature
 }
