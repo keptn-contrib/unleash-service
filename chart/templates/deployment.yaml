@@ -43,8 +43,6 @@ spec:
           ports:
             - containerPort: 80
           env:
-          - name: CONFIGURATION_SERVICE
-            value: "http://localhost:8081/configuration-service"
           - name: env
             value: 'production'
           - name: PUBSUB_TOPIC
