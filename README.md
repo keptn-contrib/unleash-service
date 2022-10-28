@@ -2,6 +2,10 @@
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/keptn-contrib/unleash-service)
 [![Go Report Card](https://goreportcard.com/badge/github.com/keptn-contrib/unleash-service)](https://goreportcard.com/report/github.com/keptn-contrib/unleash-service)
 
+## :warning: This service is currently not maintained - please reach out to the Keptn community via https://slack.keptn.sh if you want to take ownership of this repository and update it to make it work with the latest version of Keptn :warning:
+
+> Please consider using [Keptn's webhook-service](https://keptn.sh/docs/0.19.x/integrations/webhooks/) to interact with Unleash instead.
+
 This service allows to interact with the open source feature toggle system [unleash](https://github.com/unleash). 
 Triggered by a Keptn CloudEvent of the type `sh.keptn.event.action.triggered`. After the features specified in the event 
 have been toggled, it sends out an `sh.keptn.event.action.finished` event.
